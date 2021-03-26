@@ -1,16 +1,18 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import GlobalStyles from '../../../styles/GlobalStyles';
-import {setZoneAC} from '../../../Redux/RemainderReducer';
+import {setSearchAC, setScanerAC} from '../../../Redux/MainReducer';
 
 export default () => {
+  const {search} = useSelector((state) => state.mainState);
   const state = useSelector((state) => state.RemainderState);
   const dispatch = useDispatch();
   const gStyle = GlobalStyles(state.size);
@@ -24,36 +26,54 @@ export default () => {
       }}
       style={style.container}>
       <View style={style.productCreatorContaier}>
+        <View style={[style.barCode]}>
+          <TextInput
+            keyboardType="numeric"
+            value={String(search)}
+            onChangeText={(text) => dispatch(setSearchAC(text))}
+            disableFullscreenUI={true}
+            placeholder="Штрих код"
+            editable
+            style={style.input}
+          />
+          <TouchableOpacity
+            onPress={() => dispatch(setScanerAC(true))}
+            style={style.barCodeButton}>
+            <Text style={{color: 'white', fontSize: 35 * state.size}}>➙</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={[gStyle.shadow, style.button]}>
           <Text style={style.buttonText1}>+</Text>
           <Text style={style.buttonText2}>Добавить ингредиент</Text>
         </TouchableOpacity>
       </View>
       <View style={style.productsContainer}>
-        {state.products.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              gStyle.shadow,
-              style.product,
-              item === state.zone ? gStyle.selected : {},
-            ]}
-            onPress={() => {}}>
-            <Text numberOfLines={1} style={style.productName}>
-              {item.Name}
-            </Text>
-            <View style={style.Barcode}>
-              <Text style={style.icon}>☰</Text>
-              <Text style={style.iconText}>{item.Amount}</Text>
-            </View>
-            <View style={style.Barcode}>
-              <Text style={[style.icon, {fontSize: 15 * state.size}]}>
-                ║▌║║▌
+        {state.products
+          .filter((item) => String(item.Barcode).includes(String(search)))
+          .map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                gStyle.shadow,
+                style.product,
+                item === state.zone ? gStyle.selected : {},
+              ]}
+              onPress={() => {}}>
+              <Text numberOfLines={1} style={style.productName}>
+                {item.Name}
               </Text>
-              <Text style={style.iconText}>{item.Barcode}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View style={style.Barcode}>
+                <Text style={style.icon}>☰</Text>
+                <Text style={style.iconText}>{item.Amount}</Text>
+              </View>
+              <View style={style.Barcode}>
+                <Text style={[style.icon, {fontSize: 15 * state.size}]}>
+                  ║▌║║▌
+                </Text>
+                <Text style={style.iconText}>{item.Barcode}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
       </View>
     </ScrollView>
   );
@@ -71,6 +91,7 @@ const styles = (size) =>
     productCreatorContaier: {
       flexDirection: 'row',
       justifyContent: 'flex-end',
+      alignItems: 'center',
     },
     button: {
       flexDirection: 'row',
@@ -78,7 +99,7 @@ const styles = (size) =>
       alignItems: 'center',
       backgroundColor: 'rgba(248, 248, 252, 1)',
       width: 351 * size,
-      height: 70 * size,
+      height: 80 * size,
     },
     buttonText1: {
       color: 'rgba(245, 84, 11, 1)',
@@ -90,7 +111,31 @@ const styles = (size) =>
       fontSize: 24 * size,
       fontWeight: 'bold',
     },
+    barCode: {
+      width: 371 * size,
+      height: 80 * size,
+      borderRadius: 25 * size,
+      borderWidth: 1,
+      borderColor: 'rgba(51, 42, 124, 1)',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginRight: 30 * size,
+    },
+    barCodeButton: {
+      width: 80 * size,
+      height: 80 * size,
+      position: 'relative',
+      top: -3.5 * size,
+      right: -4 * size,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(51, 42, 124, 1)',
+      borderRadius: 25 * size,
+    },
 
+    input: {
+      fontSize: 24 * size,
+    },
     productsContainer: {
       paddingTop: 25 * size,
       flexDirection: 'row',

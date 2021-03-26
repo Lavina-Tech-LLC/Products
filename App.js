@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import Back from './src/AuxiliaryComponents/goBack';
+import Scaner from './src/AuxiliaryComponents/Scaner';
 import Balance from './src/Components/Balance/Balance';
 import Remainder from './src/Components/Remainder/Remainder';
 import {setCategoryAC} from './src/Redux/MainReducer';
@@ -19,7 +20,7 @@ const App = () => {
   const dispatch = useDispatch();
   const style = styles(state.size);
 
-  return (
+  return !state.scaner ? (
     <View style={style.container}>
       <StatusBar hidden />
       <View style={style.menu}>
@@ -43,6 +44,8 @@ const App = () => {
         <Back />
       </View>
     </View>
+  ) : (
+    <Scaner />
   );
 };
 
