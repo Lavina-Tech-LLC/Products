@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,6 +11,7 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import GlobalStyles from '../../../styles/GlobalStyles';
 import {setSearchAC, setScanerAC} from '../../../Redux/MainReducer';
+import {setProductAC} from '../../../Redux/RemainderReducer';
 
 export default () => {
   const {search} = useSelector((state) => state.mainState);
@@ -39,7 +41,9 @@ export default () => {
           <TouchableOpacity
             onPress={() => dispatch(setScanerAC(true))}
             style={style.barCodeButton}>
-            <Text style={{color: 'white', fontSize: 35 * state.size}}>➙</Text>
+            <Image
+              source={require('../../../assets/icons/barcodeScaner.png')}
+              style={{width: 25 * state.size, height: 25 * state.size}}></Image>
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={[gStyle.shadow, style.button]}>
@@ -58,7 +62,9 @@ export default () => {
                 style.product,
                 item === state.zone ? gStyle.selected : {},
               ]}
-              onPress={() => {}}>
+              onPress={() => {
+                dispatch(setProductAC(item.Name));
+              }}>
               <Text numberOfLines={1} style={style.productName}>
                 {item.Name}
               </Text>
@@ -129,12 +135,16 @@ const styles = (size) =>
       right: -4 * size,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: 'rgba(51, 42, 124, 1)',
+      borderColor: 'rgba(51, 42, 124, 1)',
+      borderWidth: 20 * size,
       borderRadius: 25 * size,
     },
 
     input: {
-      fontSize: 24 * size,
+      fontSize: 27 * size,
+      flex: 1,
+      padding: 0,
+      paddingLeft: 5,
     },
     productsContainer: {
       paddingTop: 25 * size,

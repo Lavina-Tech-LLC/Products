@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Dimensions,
   Image,
@@ -16,9 +16,14 @@ export default (props) => {
 
   const [open, setOpen] = useState(false);
   const state = useSelector((state) => state.mainState);
+  const state2 = useSelector((state) => state.RemainderState);
   const size = state.size;
   const style = styles(size);
   const globalStyle = GlobalStyles(size);
+  useEffect(() => {
+    setOpen(false);
+  }, [state, state2]);
+
   return (
     <View style={style.container}>
       <TouchableOpacity

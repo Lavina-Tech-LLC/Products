@@ -13,6 +13,7 @@ import GlobalStyles from '../../../styles/GlobalStyles';
 
 export default (props) => {
   const state = useSelector((state) => state.RemainderState);
+  const main = useSelector((state) => state.mainState);
   const dispatch = useDispatch();
   const gStyle = GlobalStyles(state.size);
   const style = styles(state.size);
@@ -27,7 +28,16 @@ export default (props) => {
   return (
     <View style={style.container}>
       <Text style={style.productName}>dd</Text>
-      <View style={[gStyle.shadow, style.calculatorContainer]}>
+      <View
+        style={[
+          gStyle.shadow,
+          style.calculatorContainer,
+          {
+            height:
+              Dimensions.get('window').height -
+              (main.showMenu ? 390 : 360) * main.size,
+          },
+        ]}>
         <View style={style.inputOutputDoneContainer}>
           <View style={[gStyle.shadow, style.inputOutputContainer]}>
             <View style={style.inputContainer}>
@@ -48,7 +58,8 @@ export default (props) => {
               </TouchableOpacity>
               <Text style={style.sum}>
                 {state.calcVar
-                  ? state.calcVar
+                  ? '= ' +
+                    state.calcVar
                       .split('+')
                       .reduce((a, b) => Number(a) + Number(b), 0)
                   : 0}
@@ -109,6 +120,8 @@ const styles = (size) =>
     container: {
       marginTop: 50 * size,
       padding: 20,
+      height: '100%',
+      justifyContent: 'space-around',
     },
     productName: {
       marginBottom: 25 * size,
@@ -122,7 +135,6 @@ const styles = (size) =>
       backgroundColor: 'rgba(248, 248, 252, 1)',
       padding: 25 * size,
       justifyContent: 'space-between',
-      height: Dimensions.get('window').height - 390 * size,
     },
     inputOutputDoneContainer: {
       alignItems: 'center',
@@ -164,6 +176,7 @@ const styles = (size) =>
     sum: {
       fontSize: 35 * size,
       fontWeight: 'bold',
+      color: 'red',
     },
     done: {
       width: 363 * size,

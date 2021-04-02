@@ -1,29 +1,51 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   View,
   Text,
   StatusBar,
   Dimensions,
+  Image,
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import Back from './src/AuxiliaryComponents/goBack';
 import Scaner from './src/AuxiliaryComponents/Scaner';
 import Balance from './src/Components/Balance/Balance';
+import Coming from './src/Components/Coming/Coming';
 import Remainder from './src/Components/Remainder/Remainder';
-import {setCategoryAC} from './src/Redux/MainReducer';
+import WriteOff from './src/Components/WriteOff/WriteOff';
+import {setCategoryAC, setShowMenuAC} from './src/Redux/MainReducer';
 
 const App = () => {
+  const [category, setCategory] = useState(<WriteOff />);
   const state = useSelector((state) => state.mainState);
   const dispatch = useDispatch();
   const style = styles(state.size);
 
+  useEffect(() => {
+    switch (state.category) {
+      case 'Остаток':
+        setCategory(<Remainder />);
+        break;
+      case 'Приход':
+        setCategory(<Coming />);
+        break;
+      case 'Списание':
+        setCategory(<WriteOff />);
+        break;
+      case 'Баланс':
+        setCategory(<Balance />);
+        break;
+      case 'Заказ':
+        break;
+    }
+  }, [state.category]);
+
   return !state.scaner ? (
     <View style={style.container}>
       <StatusBar hidden />
-      <View style={style.menu}>
+      <View style={[style.menu, state.showMenu ? {} : style.hide]}>
         {state.categories.map((m, i) => (
           <TouchableOpacity
             key={i}
@@ -39,10 +61,41 @@ const App = () => {
           </TouchableOpacity>
         ))}
       </View>
-      <View style={style.content}>
-        <Remainder />
+      <View
+        style={[
+          style.content,
+          {
+            height:
+              Dimensions.get('window').height -
+              (state.showMenu ? 180 * state.size : 75 * state.size),
+          },
+        ]}>
+        {category}
         <Back />
       </View>
+      <TouchableOpacity
+        onPress={() => dispatch(setShowMenuAC())}
+        style={{
+          position: 'absolute',
+          top: 1,
+          right: 1,
+          width: 18,
+          height: 18,
+          borderRadius: 9,
+          borderWidth: 1,
+          borderColor: 'orange',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <Image
+          source={
+            state.showMenu
+              ? require('./src/assets/icons/close.png')
+              : require('./src/assets/icons/open.png')
+          }
+          style={{width: 18 * state.size, height: 10 * state.size}}
+        />
+      </TouchableOpacity>
     </View>
   ) : (
     <Scaner />
@@ -60,6 +113,7 @@ const styles = (size) => {
       justifyContent: 'space-around',
       alignItems: 'center',
       marginBottom: 25 * size,
+      marginRight: 4,
     },
     menuItem: {
       justifyContent: 'center',
@@ -91,7 +145,6 @@ const styles = (size) => {
     },
     content: {
       width: '100%',
-      height: Dimensions.get('window').height - 180 * size,
       borderRadius: 25 * size,
       backgroundColor: 'white',
       shadowColor: '#000',
@@ -102,6 +155,9 @@ const styles = (size) => {
       shadowRadius: 10 * size,
       shadowOpacity: 1.0,
       elevation: 3,
+    },
+    hide: {
+      display: 'none',
     },
   });
 };

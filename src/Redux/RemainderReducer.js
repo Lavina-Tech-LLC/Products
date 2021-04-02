@@ -26,7 +26,7 @@ const initialState = {
     'Стеллаж 7',
     'Стеллаж 8',
   ],
-  zone: 'Стеллаж 1',
+  zone: '',
   products: [
     {
       UIDProduct: '120a2402-af94-11ea-9e54-502b73d5e1bd',
@@ -66,7 +66,7 @@ export default (state = initialState, action) => {
     case SET_TYPE:
       return {...state, type: action.payload};
     case SET_PRODUCTS:
-      return {...state, productes: action.payload};
+      return {...state, products: action.payload};
     case SET_PRODUCT:
       return {...state, product: action.payload};
     case SET_ZONES:

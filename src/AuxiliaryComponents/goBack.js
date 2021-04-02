@@ -1,74 +1,80 @@
 import React, {useState} from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {useSelector} from 'react-redux';
 import {Picker} from '@react-native-picker/picker';
 import Select from './Select';
+import {useDispatch, useSelector} from 'react-redux';
+import {setProductAC, setTypeAC, setZoneAC} from '../Redux/RemainderReducer';
 export default () => {
-  const [path, setPath] = useState('>>>');
   const state = useSelector((state) => state.mainState);
+  const remainder = useSelector((state) => state.RemainderState);
+  const dispatch = useDispatch();
   const size = state.size;
   const style = styles(size);
 
-  return (
+  const goBack = () => {
+    switch (state.category) {
+      case 'Остаток':
+        if (remainder.type && remainder.zone && remainder.product) {
+          dispatch(setProductAC(''));
+        } else if (remainder.type && remainder.zone) {
+          dispatch(setZoneAC(''));
+        } else if (remainder.type) {
+          dispatch(setTypeAC(''));
+        }
+        break;
+    }
+  };
+
+  const Selectors = () => {};
+
+  return state.category === 'Остаток' && remainder.type ? (
     <View style={style.container}>
-      <TouchableOpacity style={style.backButton}>
+      <TouchableOpacity onPress={() => goBack()} style={style.backButton}>
         <Image
           style={{width: 12 * size, height: 15 * size}}
           source={require('../assets/icons/back.png')}
         />
         <Text style={style.textBackButton}>Назад</Text>
       </TouchableOpacity>
-      <Select
-        defaultSelected={path}
-        onChange={(item) => {
-          setPath(item);
-        }}
-        options={[
-          '123',
-          '45dsadwdsawdsdawds dsasssssdwASdsadawdsadawdasadwdsdsadadS6',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-          '>>>',
-        ]}
-      />
+      {remainder.type ? (
+        <Select
+          defaultSelected={remainder.type}
+          onChange={(item) => {
+            dispatch(setProductAC(''));
+            dispatch(setZoneAC(''));
+            dispatch(setTypeAC(item));
+          }}
+          options={remainder.types}
+        />
+      ) : (
+        <View />
+      )}
+      {remainder.zone ? (
+        <Select
+          defaultSelected={remainder.zone}
+          onChange={(item) => {
+            dispatch(setProductAC(''));
+            dispatch(setZoneAC(item));
+          }}
+          options={remainder.zones}
+        />
+      ) : (
+        <View />
+      )}
+      {remainder.product ? (
+        <Select
+          defaultSelected={remainder.product}
+          onChange={(item) => {
+            dispatch(setProductAC(item));
+          }}
+          options={remainder.products.map((i) => i.Name)}
+        />
+      ) : (
+        <View />
+      )}
     </View>
+  ) : (
+    <View />
   );
 };
 
