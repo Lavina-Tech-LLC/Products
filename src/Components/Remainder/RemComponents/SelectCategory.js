@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {setTypeAC} from '../../../Redux/RemainderReducer';
+import {setTypeAC, setZoneAC} from '../../../Redux/RemainderReducer';
 
-export default () => {
+export default React.memo(() => {
   const state = useSelector((state) => state.mainState);
   const remState = useSelector((state) => state.RemainderState);
   const dispatch = useDispatch();
@@ -14,7 +14,20 @@ export default () => {
         <TouchableOpacity
           key={i}
           style={[style.RemItem, remState.type === m ? style.select : {}]}
-          onPress={() => dispatch(setTypeAC(m))}>
+          onPress={() => {
+            if (m === 'Переучет') Alert.alert('', '"Переучет" пока недоступно');
+            else if (remState.zone === m || !remState.zone) {
+              dispatch(setZoneAC(m));
+              dispatch(setTypeAC(m));
+            } else {
+              Alert.alert(
+                '',
+                'Закройте осталные процессы по учету остатков (' +
+                  remState.zone +
+                  ')',
+              );
+            }
+          }}>
           <Text
             style={[style.RemText, remState.type === m ? style.noSelect : {}]}>
             {m}
@@ -23,7 +36,7 @@ export default () => {
       ))}
     </View>
   );
-};
+});
 
 const styles = (size) =>
   StyleSheet.create({

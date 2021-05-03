@@ -11,16 +11,40 @@ import {
   View,
 } from 'react-native';
 import {RNCamera} from 'react-native-camera';
-import {useDispatch} from 'react-redux';
-import {setScanerAC, setSearchAC} from '../Redux/MainReducer';
+import {useDispatch, useSelector} from 'react-redux';
+import {setSearchComingAC} from '../Redux/ComingReducer';
+import {setScanerAC, setSearchAC, updateWriteOffAC} from '../Redux/MainReducer';
 
 export default () => {
+  const state = useSelector((state) => state.mainState);
   const dispatch = useDispatch();
   const [torch, setTorch] = useState(false);
 
   const onRead = ({data}) => {
     try {
-      dispatch(setSearchAC(Number(data)));
+      switch (state.category) {
+        case 'Остаток':
+          dispatch(setSearchAC(Number(data)));
+          break;
+        case 'Приход':
+          dispatch(setSearchComingAC(Number(data)));
+          break;
+
+        case 'Списание':
+          dispatch(
+            updateWriteOffAC({
+              index: state.index,
+              data: {
+                UIDProduct: '',
+                disable: false,
+                bc: Number(data),
+                name: state.writeoff[state.index].name,
+                amount: state.writeoff[state.index].amount,
+              },
+            }),
+          );
+          break;
+      }
       dispatch(setScanerAC(false));
     } catch (error) {
       Alert.alert(error + '\nResult: ' + data);

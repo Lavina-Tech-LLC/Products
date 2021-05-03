@@ -56,7 +56,7 @@ export default (props) => {
                 onChange(item, index);
               }}>
               <Text numberOfLines={1} style={style.optionText}>
-                {item}
+                {item.Name}
               </Text>
             </TouchableOpacity>
           ))}
@@ -80,6 +80,7 @@ const styles = (size) =>
       width: 300 * size,
       paddingLeft: 18 * size,
       paddingRight: 25 * size,
+      marginBottom: 5 * size,
     },
     selectedText: {
       marginRight: 20 * size,

@@ -27,6 +27,8 @@ export const styles = (size) =>
     productContainer: {
       width: 820 * size,
       height: '100%',
+      padding: 15 * size,
+      paddingBottom: 30 * size,
     },
     barCode: {
       width: 371 * size,
@@ -56,5 +58,14 @@ export const styles = (size) =>
       borderColor: 'rgba(51, 42, 124, 1)',
       borderWidth: 20 * size,
       borderRadius: 15 * size,
+    },
+    Number: {fontSize: 18 * size, fontWeight: 'bold'},
+    Date: {
+      fontSize: 18 * size,
+      fontWeight: 'bold',
+    },
+    writeOffContainer: {
+      width: 290 * size,
+      height: 70 * size,
     },
   });

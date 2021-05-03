@@ -1,4 +1,7 @@
-import {Dimensions} from 'react-native';
+// <<<<<< IMPORTS >>>>>>
+import {Alert, Dimensions, ToastAndroid} from 'react-native';
+import api from '../API/api';
+import {getDate} from '../Utils/helpers';
 
 //   <<<<<< types >>>>>>
 const SET_TYPES = 'RemainderReducer/SET_TYPES';
@@ -8,13 +11,15 @@ const SET_ZONES = 'RemainderReducer/SET_ZONES';
 const SET_ZONE = 'RemainderReducer/SET_ZONE';
 const SET_PRODUCTS = 'RemainderReducer/SET_PRODUCTS';
 const SET_PRODUCT = 'RemainderReducer/SET_PRODUCT';
-
-// <<<<<< IMPORTS >>>>>>
+const SET_LOADER = 'RemainderReducer/SET_LOADER';
+const CHANGE_AMOUNT = 'RemainderReducer/CHANGE_AMOUNT';
+const SET_INVENTORY_UID = 'RemainderReducer/SET_INVENTORY_UID';
 
 // <<<<<< iNITIAL STATE >>>>>>
 const initialState = {
   size: (Number(Dimensions.get('window').width) * 0.064) / 100,
   calcVar: '',
+  loader: false,
   types: ['Принять', 'Сдать', 'Переучет'],
   type: '',
   zones: [
@@ -27,33 +32,9 @@ const initialState = {
     'Стеллаж 8',
   ],
   zone: '',
-  products: [
-    {
-      UIDProduct: '120a2402-af94-11ea-9e54-502b73d5e1bd',
-      Name: 'cc Кока кола 0.5',
-      Barcode: 6542,
-      Amount: 12,
-    },
-    {
-      UIDProduct: '9e906055-af9d-11ea-9e54-502b73d5e1bd',
-      Name: 'cc Кока кола 1.0',
-      Barcode: 0,
-      Amount: 1,
-    },
-    {
-      UIDProduct: '25fc264e-f1c1-11ea-9e84-00d8614f18c9',
-      Name: 'Сыр',
-      Barcode: 67,
-      Amount: 12,
-    },
-    {
-      UIDProduct: 'e96ff160-f800-11ea-9e85-00d8614f18c9',
-      Name: 'Печеньки',
-      Barcode: 4605825003401,
-      Amount: 3,
-    },
-  ],
+  products: [],
   product: '',
+  UIDInventory: null,
 };
 
 // <<<<<< REDUCER >>>>>>
@@ -65,6 +46,16 @@ export default (state = initialState, action) => {
       return {...state, calcVar: action.payload};
     case SET_TYPE:
       return {...state, type: action.payload};
+    case SET_INVENTORY_UID:
+      return {...state, UIDInventory: action.payload};
+    case CHANGE_AMOUNT:
+      const prd = state.products.map((p) => {
+        if (state.product && p.UIDProduct === state.product.UIDProduct) {
+          p.amountfact = action.payload;
+        }
+        return p;
+      });
+      return {...state, products: prd};
     case SET_PRODUCTS:
       return {...state, products: action.payload};
     case SET_PRODUCT:
@@ -73,6 +64,8 @@ export default (state = initialState, action) => {
       return {...state, zones: action.payload};
     case SET_ZONE:
       return {...state, zone: action.payload};
+    case SET_LOADER:
+      return {...state, loader: action.payload};
     default:
       return {...state};
   }
@@ -80,13 +73,117 @@ export default (state = initialState, action) => {
 
 // <<<<<< ACTION CREATOR >>>>>>
 export const setTypesAC = (payload) => ({type: SET_TYPES, payload});
+export const changeAmountAC = (payload) => ({type: CHANGE_AMOUNT, payload});
 export const setCalcVarAC = (payload) => ({type: SET_CALCVAR, payload});
 export const setTypeAC = (payload) => ({type: SET_TYPE, payload});
+export const setInventoryUidAC = (payload) => ({
+  type: SET_INVENTORY_UID,
+  payload,
+});
 export const setProductsAC = (payload) => ({type: SET_PRODUCTS, payload});
 export const setProductAC = (payload) => ({type: SET_PRODUCT, payload});
 export const setZonesAC = (payload) => ({type: SET_ZONES, payload});
 export const setZoneAC = (payload) => ({type: SET_ZONE, payload});
+export const setLoaderAC = (payload) => ({type: SET_LOADER, payload});
 
 // <<<<<< THUNKS >>>>>>
-export const getProducts = () => (dispatch) => {};
-export const getZones = () => (dispatch) => {};
+export const getProducts = () => (dispatch, getState) => {
+  const {token, UIDStructure} = getState().UserState;
+  const {type} = getState().RemainderState;
+  dispatch(setLoaderAC(true));
+  const getUrl = () => {
+    switch (type) {
+      case 'Принять':
+        return `lastinventory?UIDStructure=${UIDStructure}&date=${getDate()}`;
+      case 'Сдать':
+        return `listproducts/${UIDStructure}`;
+
+      default:
+        return '';
+    }
+  };
+  api(getUrl(), 'GET', token)
+    .then((res) => {
+      dispatch(setProductsAC(res));
+      dispatch(setLoaderAC(false));
+    })
+    .catch((e) => {
+      dispatch(setLoaderAC(false));
+      console.log(e);
+    });
+};
+
+export const lastInventoryDone = () => (dispatch, getState) => {
+  dispatch(setLoaderAC(true));
+  const {token, UIDStructure} = getState().UserState;
+  const {UIDInventory, products, type} = getState().RemainderState;
+
+  const body = {
+    date: getDate(),
+    UIDInventory: type === 'Принять' ? null : UIDInventory,
+    UIDStructure,
+    Products: products.map((product) => ({
+      UIDProduct: product.UIDProduct,
+      amountrecord: product.Amount,
+      amountfact:
+        product.amountfact || String(product.amountfact) === String(0)
+          ? product.amountfact
+          : product.Amount,
+    })),
+  };
+  api('lastinventorydone', 'POST', token, body)
+    .then(() => {
+      dispatch(setLoaderAC(false));
+      ToastAndroid.show('✔️', ToastAndroid.SHORT);
+    })
+    .catch((e) => {
+      dispatch(setLoaderAC(false));
+      console.log(e);
+    });
+};
+
+export const changeInventory = () => (dispatch, getState) => {
+  dispatch(setLoaderAC(true));
+  const {token, UIDStructure} = getState().UserState;
+  const {UIDInventory, products} = getState().RemainderState;
+
+  const body = {
+    date: getDate(),
+    UIDInventory: null,
+    UIDStructure,
+    Products: products.map((product) => ({
+      UIDProduct: product.UIDProduct,
+      amountrecord: product.Amount,
+      amountfact:
+        product.amountfact || String(product.amountfact) === String(0)
+          ? product.amountfact
+          : product.Amount,
+    })),
+  };
+
+  api('changeInventory', 'POST', token, body)
+    .then(() => {
+      dispatch(setLoaderAC(false));
+    })
+    .catch((e) => {
+      dispatch(setLoaderAC(false));
+      console.log(e);
+    });
+};
+
+export const getInventoryUid = () => (dispatch, getState) => {
+  const {token, UIDStructure} = getState().UserState;
+  api(
+    `getinventoryuid?UIDStructure=${UIDStructure}&Type=passOff&date=${getDate()}`,
+    'GET',
+    token,
+  )
+    .then((res) => {
+      dispatch(setInventoryUidAC(res));
+      dispatch(setLoaderAC(false));
+    })
+    .catch((e) => {
+      dispatch(setLoaderAC(false));
+      console.log(e);
+    });
+};

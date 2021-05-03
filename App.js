@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import SplashScreen from 'react-native-splash-screen';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -13,16 +14,25 @@ import Back from './src/AuxiliaryComponents/goBack';
 import Scaner from './src/AuxiliaryComponents/Scaner';
 import Balance from './src/Components/Balance/Balance';
 import Coming from './src/Components/Coming/Coming';
+import Basic from './src/Components/Order/Order';
 import Remainder from './src/Components/Remainder/Remainder';
 import WriteOff from './src/Components/WriteOff/WriteOff';
 import {setCategoryAC, setShowMenuAC} from './src/Redux/MainReducer';
+import Auth from './src/Auth/Auth';
+import {setUidAC} from './src/Redux/UserReducer';
 
 const App = () => {
   const [category, setCategory] = useState(<WriteOff />);
   const state = useSelector((state) => state.mainState);
+  const UIDStructure = useSelector((state) => state.UserState.UIDStructure);
   const dispatch = useDispatch();
   const style = styles(state.size);
-
+  useEffect(() => {
+    SplashScreen.hide();
+    return () => {
+      dispatch(setUidAC(''));
+    };
+  }, []);
   useEffect(() => {
     switch (state.category) {
       case 'Остаток':
@@ -38,68 +48,70 @@ const App = () => {
         setCategory(<Balance />);
         break;
       case 'Заказ':
+        setCategory(<Basic />);
         break;
     }
   }, [state.category]);
-
-  return !state.scaner ? (
-    <View style={style.container}>
-      <StatusBar hidden />
-      <View style={[style.menu, state.showMenu ? {} : style.hide]}>
-        {state.categories.map((m, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[style.menuItem, state.category === m ? style.select : {}]}
-            onPress={() => dispatch(setCategoryAC(m))}>
-            <Text
-              style={[
-                style.menuText,
-                state.category === m ? style.TextSelect : {},
-              ]}>
-              {m}
-            </Text>
-          </TouchableOpacity>
-        ))}
+  if (!UIDStructure) return <Auth />;
+  else
+    return !state.scaner ? (
+      <View style={style.container}>
+        <StatusBar hidden />
+        <View style={[style.menu, state.showMenu ? {} : style.hide]}>
+          {state.categories.map((m, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[style.menuItem, state.category === m ? style.select : {}]}
+              onPress={() => dispatch(setCategoryAC(m))}>
+              <Text
+                style={[
+                  style.menuText,
+                  state.category === m ? style.TextSelect : {},
+                ]}>
+                {m}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View
+          style={[
+            style.content,
+            {
+              height:
+                Dimensions.get('window').height -
+                (state.showMenu ? 180 * state.size : 75 * state.size),
+            },
+          ]}>
+          {category}
+          <Back />
+        </View>
+        <TouchableOpacity
+          onPress={() => dispatch(setShowMenuAC())}
+          style={{
+            position: 'absolute',
+            top: 1,
+            right: 1,
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            borderWidth: 1,
+            borderColor: 'orange',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Image
+            source={
+              state.showMenu
+                ? require('./src/assets/icons/close.png')
+                : require('./src/assets/icons/open.png')
+            }
+            style={{width: 18 * state.size, height: 10 * state.size}}
+          />
+        </TouchableOpacity>
       </View>
-      <View
-        style={[
-          style.content,
-          {
-            height:
-              Dimensions.get('window').height -
-              (state.showMenu ? 180 * state.size : 75 * state.size),
-          },
-        ]}>
-        {category}
-        <Back />
-      </View>
-      <TouchableOpacity
-        onPress={() => dispatch(setShowMenuAC())}
-        style={{
-          position: 'absolute',
-          top: 1,
-          right: 1,
-          width: 18,
-          height: 18,
-          borderRadius: 9,
-          borderWidth: 1,
-          borderColor: 'orange',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <Image
-          source={
-            state.showMenu
-              ? require('./src/assets/icons/close.png')
-              : require('./src/assets/icons/open.png')
-          }
-          style={{width: 18 * state.size, height: 10 * state.size}}
-        />
-      </TouchableOpacity>
-    </View>
-  ) : (
-    <Scaner />
-  );
+    ) : (
+      <Scaner />
+    );
 };
 
 const styles = (size) => {

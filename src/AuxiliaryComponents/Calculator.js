@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   Dimensions,
   Image,
   StyleSheet,
@@ -8,16 +9,20 @@ import {
   View,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {setCalcVarAC} from '../../../Redux/RemainderReducer';
-import GlobalStyles from '../../../styles/GlobalStyles';
-
+import {setCalcVarAC} from '../Redux/RemainderReducer';
+import GlobalStyles from '../styles/GlobalStyles';
+const summa = (val) => {
+  return val.split('+').reduce((a, b) => Number(a) + Number(b), 0);
+};
 export default (props) => {
   const state = useSelector((state) => state.RemainderState);
   const main = useSelector((state) => state.mainState);
   const dispatch = useDispatch();
   const gStyle = GlobalStyles(state.size);
   const style = styles(state.size);
-
+  React.useEffect(() => {
+    return () => dispatch(setCalcVarAC(''));
+  }, []);
   const calcNumbers = [
     ['1', '2', '3'],
     ['4', '5', '6'],
@@ -27,7 +32,7 @@ export default (props) => {
 
   return (
     <View style={style.container}>
-      <Text style={style.productName}>dd</Text>
+      <Text style={style.productName}>{props.state.product?.Name}</Text>
       <View
         style={[
           gStyle.shadow,
@@ -53,20 +58,44 @@ export default (props) => {
                 }}>
                 <Image
                   style={style.closeIcon}
-                  source={require('../../../assets/icons/reset.png')}
+                  source={require('../assets/icons/reset.png')}
                 />
               </TouchableOpacity>
               <Text style={style.sum}>
-                {state.calcVar
-                  ? '= ' +
-                    state.calcVar
-                      .split('+')
-                      .reduce((a, b) => Number(a) + Number(b), 0)
-                  : 0}
+                {state.calcVar ? '= ' + summa(state.calcVar) : 0}
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={style.done}>
+          <TouchableOpacity
+            onPress={() => {
+              if (
+                String(summa(state.calcVar)) ===
+                String(props.state.product?.Amount)
+              ) {
+                props.done(summa(state.calcVar));
+                dispatch(setCalcVarAC(''));
+              } else {
+                Alert.alert(
+                  '',
+                  'Количество посчитаное Вами не совпадает с ... Хотите пересчитать?',
+                  [
+                    {
+                      text: 'Нет, продолжить',
+                      onPress: () => console.log('Cancel Pressed'),
+                      style: 'cancel',
+                    },
+                    {
+                      text: 'Да ',
+                      onPress: () => {
+                        props.done(summa(state.calcVar));
+                        dispatch(setCalcVarAC(''));
+                      },
+                    },
+                  ],
+                );
+              }
+            }}
+            style={style.done}>
             <Text>Готово</Text>
           </TouchableOpacity>
         </View>

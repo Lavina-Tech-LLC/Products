@@ -1,23 +1,42 @@
 import React, {useEffect, useState} from 'react';
-import {useSelector} from 'react-redux';
-import Calculator from './RemComponents/Calculator';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  changeAmountAC,
+  getProducts,
+  setProductAC,
+} from '../../Redux/RemainderReducer';
+import Calculator from '../../AuxiliaryComponents/Calculator';
 import SelectCategory from './RemComponents/SelectCategory';
 import SelectProduct from './RemComponents/SelectProduct';
 import SelectZone from './RemComponents/SelectZone';
 
-export default () => {
+export default React.memo(() => {
   const [Selection, setSelection] = useState(<SelectCategory />);
   const state = useSelector((state) => state.RemainderState);
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    if (state.type && state.zone && state.product) {
-      setSelection(<Calculator />);
-    } else if (state.type && state.zone) {
-      setSelection(<SelectProduct />);
+    // if (state.type && state.zone && state.product) {
+    if (state.type && state.product.UIDProduct) {
+      setSelection(
+        <Calculator
+          state={state}
+          done={(amount) => {
+            dispatch(changeAmountAC(amount));
+            dispatch(setProductAC(''));
+          }}
+        />,
+      );
+      //} else if (state.type && state.zone) {
     } else if (state.type) {
-      setSelection(<SelectZone />);
-    } else {
+      setSelection(<SelectProduct />);
+    }
+    // if (state.type) {
+    //   setSelection(<SelectZone />);
+    // } else
+    else {
       setSelection(<SelectCategory />);
     }
   }, [state]);
   return <>{Selection}</>;
-};
+});

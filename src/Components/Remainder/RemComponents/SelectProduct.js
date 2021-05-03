@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   ScrollView,
@@ -6,20 +6,34 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   View,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import GlobalStyles from '../../../styles/GlobalStyles';
 import {setSearchAC, setScanerAC} from '../../../Redux/MainReducer';
-import {setProductAC} from '../../../Redux/RemainderReducer';
+import {
+  changeInventory,
+  getInventoryUid,
+  getProducts,
+  lastInventoryDone,
+  setProductAC,
+  setProductsAC,
+  setTypeAC,
+  setZoneAC,
+} from '../../../Redux/RemainderReducer';
+import Card from '../../../AuxiliaryComponents/Card';
 
-export default () => {
+export default React.memo(() => {
   const {search} = useSelector((state) => state.mainState);
   const state = useSelector((state) => state.RemainderState);
   const dispatch = useDispatch();
   const gStyle = GlobalStyles(state.size);
   const style = styles(state.size);
-
+  useEffect(() => {
+    state.type === 'Сдать' && dispatch(getInventoryUid());
+    state.products.length < 1 && dispatch(getProducts());
+  }, []);
   return (
     <ScrollView
       contentContainerStyle={{
@@ -46,44 +60,70 @@ export default () => {
               style={{width: 25 * state.size, height: 25 * state.size}}></Image>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={[gStyle.shadow, style.button]}>
+        {/* <TouchableOpacity style={[gStyle.shadow, style.button]}>
           <Text style={style.buttonText1}>+</Text>
           <Text style={style.buttonText2}>Добавить ингредиент</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
-      <View style={style.productsContainer}>
-        {state.products
-          .filter((item) => String(item.Barcode).includes(String(search)))
-          .map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                gStyle.shadow,
-                style.product,
-                item === state.zone ? gStyle.selected : {},
-              ]}
-              onPress={() => {
-                dispatch(setProductAC(item.Name));
-              }}>
-              <Text numberOfLines={1} style={style.productName}>
-                {item.Name}
-              </Text>
-              <View style={style.Barcode}>
-                <Text style={style.icon}>☰</Text>
-                <Text style={style.iconText}>{item.Amount}</Text>
-              </View>
-              <View style={style.Barcode}>
-                <Text style={[style.icon, {fontSize: 15 * state.size}]}>
-                  ║▌║║▌
-                </Text>
-                <Text style={style.iconText}>{item.Barcode}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-      </View>
+      {state.loader ? (
+        <View
+          style={{
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <ActivityIndicator size="large" color="#00ff00" />
+        </View>
+      ) : (
+        <View style={style.productsContainer}>
+          {state.products
+            .filter((item) => String(item.Barсode).includes(String(search)))
+            .map((item, index) => (
+              <Card
+                key={index}
+                index={index}
+                item={item}
+                onClickCard={() => {
+                  dispatch(setProductAC(item));
+                }}
+                color={
+                  item.amountfact
+                    ? item.amountfact === item.Amount
+                      ? '#d7fab9'
+                      : '#fab9bb'
+                    : ''
+                }
+                state={state}
+              />
+            ))}
+        </View>
+      )}
+      <TouchableOpacity
+        onPress={() => {
+          state.type === 'Принять' && dispatch(changeInventory());
+          dispatch(lastInventoryDone());
+          dispatch(setProductsAC([]));
+          dispatch(setTypeAC(''));
+          dispatch(setZoneAC(''));
+        }}
+        style={{
+          borderWidth: 4 * state.size,
+          borderColor: '#261b6e',
+          borderRadius: 35 * state.size,
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 400 * state.size,
+          height: 80 * state.size,
+          margin: 30 * state.size,
+        }}>
+        <Text style={{fontWeight: 'bold', fontSize: 35 * state.size}}>
+          Отправить
+        </Text>
+      </TouchableOpacity>
     </ScrollView>
   );
-};
+});
 
 const styles = (size) =>
   StyleSheet.create({
@@ -186,5 +226,7 @@ const styles = (size) =>
       color: 'rgba(245, 84, 11, 1)',
       marginRight: 15 * size,
     },
-    iconText: {},
+    iconText: {
+      fontSize: 24 * size,
+    },
   });
