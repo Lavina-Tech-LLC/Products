@@ -29,9 +29,9 @@ export default React.memo(() => {
   const state = useSelector((state) => state.mainState);
   const style = styles(state.size);
   const gStyle = GlobalStyles(state.size);
+  const [UIDInvoice, setUIDInvoice] = useState('');
   const [marginB, setMarginB] = useState('start');
   const [position, setPosition] = useState(0);
-  const [UIDInvoice, setUIDInvoice] = useState('');
   const [prevPosition, setPrevPosition] = useState(0);
   const scrollRef = useRef(null);
 
@@ -113,7 +113,7 @@ export default React.memo(() => {
                   textAlign: 'center',
                   fontWeight: 'bold',
                 }}>
-                {'Принятые \nнакладные'}
+                {'Накладные \nдля списания'}
               </Text>
             </View>
             <ScrollView
@@ -157,6 +157,7 @@ export default React.memo(() => {
         </View>
       ) : (
         <ScrollView
+          nestedScrollEnabled={true}
           ref={scrollRef}
           style={{
             flex: 1,

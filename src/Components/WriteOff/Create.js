@@ -104,6 +104,7 @@ export default ({size, index}) => {
         </View>
         {show && !disable && index === main.index ? (
           <ScrollView
+            nestedScrollEnabled={true}
             style={[gStyle.shadow, style.barCodeListContainer]}
             contentContainerStyle={{paddingBottom: 20 * size}}>
             {main.products
@@ -166,6 +167,7 @@ export default ({size, index}) => {
         </View>
         {showName && !disable && index === main.index ? (
           <ScrollView
+            nestedScrollEnabled={true}
             style={[gStyle.shadow, style.barCodeListContainer]}
             contentContainerStyle={{paddingBottom: 20 * size}}>
             {main.products
@@ -185,7 +187,15 @@ export default ({size, index}) => {
                     setShow(false);
                     setShowName(false);
                   }}>
-                  <Text>{item.Name}</Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      borderBottomColor: 'grey',
+                      borderBottomWidth: 2 * state.size,
+                      marginBottom: 2 * state.size,
+                    }}>
+                    {item.Name}
+                  </Text>
                 </TouchableOpacity>
               ))}
           </ScrollView>

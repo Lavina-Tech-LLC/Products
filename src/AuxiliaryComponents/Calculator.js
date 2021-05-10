@@ -11,9 +11,7 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import {setCalcVarAC} from '../Redux/RemainderReducer';
 import GlobalStyles from '../styles/GlobalStyles';
-const summa = (val) => {
-  return val.split('+').reduce((a, b) => Number(a) + Number(b), 0);
-};
+import {summa} from '../Utils/helpers';
 export default (props) => {
   const state = useSelector((state) => state.RemainderState);
   const main = useSelector((state) => state.mainState);
@@ -21,8 +19,10 @@ export default (props) => {
   const gStyle = GlobalStyles(state.size);
   const style = styles(state.size);
   React.useEffect(() => {
+    if (props.state.product.amountfact)
+      dispatch(setCalcVarAC(props.state.product.amountfact));
     return () => dispatch(setCalcVarAC(''));
-  }, []);
+  }, [props.state.product.amountfact]);
   const calcNumbers = [
     ['1', '2', '3'],
     ['4', '5', '6'],
@@ -32,7 +32,34 @@ export default (props) => {
 
   return (
     <View style={style.container}>
-      <Text style={style.productName}>{props.state.product?.Name}</Text>
+      <View
+        style={{
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+        <Text style={style.productName}>{props.state.product.Name}</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginRight: 20 * state.size,
+          }}>
+          <Text
+            style={{
+              fontSize: 40 * state.size,
+              fontWeight: 'bold',
+              marginRight: 15 * state.size,
+            }}>
+            ☰
+          </Text>
+          <Text style={{fontSize: 40 * state.size, fontWeight: 'bold'}}>
+            {props.state.product.Amount}
+          </Text>
+        </View>
+      </View>
+
       <View
         style={[
           gStyle.shadow,
@@ -72,7 +99,7 @@ export default (props) => {
                 String(summa(state.calcVar)) ===
                 String(props.state.product?.Amount)
               ) {
-                props.done(summa(state.calcVar));
+                props.done(state.calcVar);
                 dispatch(setCalcVarAC(''));
               } else {
                 Alert.alert(
@@ -81,15 +108,15 @@ export default (props) => {
                   [
                     {
                       text: 'Нет, продолжить',
-                      onPress: () => console.log('Cancel Pressed'),
+                      onPress: () => {
+                        dispatch(setCalcVarAC(''));
+                        props.done(state.calcVar);
+                      },
                       style: 'cancel',
                     },
                     {
                       text: 'Да ',
-                      onPress: () => {
-                        props.done(summa(state.calcVar));
-                        dispatch(setCalcVarAC(''));
-                      },
+                      onPress: () => console.log('Cancel Pressed'),
                     },
                   ],
                 );

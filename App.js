@@ -8,23 +8,42 @@ import {
   StatusBar,
   Dimensions,
   Image,
+  Alert,
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import Back from './src/AuxiliaryComponents/goBack';
 import Scaner from './src/AuxiliaryComponents/Scaner';
 import Balance from './src/Components/Balance/Balance';
 import Coming from './src/Components/Coming/Coming';
-import Basic from './src/Components/Order/Order';
+import Order from './src/Components/Order/Order';
 import Remainder from './src/Components/Remainder/Remainder';
 import WriteOff from './src/Components/WriteOff/WriteOff';
-import {setCategoryAC, setShowMenuAC} from './src/Redux/MainReducer';
+import {
+  removeAllWriteOffAC,
+  setCategoryAC,
+  setIsCreateWriteOffAC,
+  setShowMenuAC,
+} from './src/Redux/MainReducer';
 import Auth from './src/Auth/Auth';
 import {setUidAC} from './src/Redux/UserReducer';
+import {
+  setProductsAC,
+  setZoneAC,
+  setProductAC,
+  setTypeAC,
+} from './src/Redux/RemainderReducer';
+import {
+  setProductsAC as setComingProductsAC,
+  setProductAC as setComingProductAC,
+  setListDoneInvoiceAC,
+  setListInvoiceAC,
+  setInvoiceAC,
+} from './src/Redux/ComingReducer';
 
 const App = () => {
   const [category, setCategory] = useState(<WriteOff />);
   const state = useSelector((state) => state.mainState);
-  const UIDStructure = useSelector((state) => state.UserState.UIDStructure);
+  const {UIDStructure, structures} = useSelector((state) => state.UserState);
   const dispatch = useDispatch();
   const style = styles(state.size);
   useEffect(() => {
@@ -48,7 +67,7 @@ const App = () => {
         setCategory(<Balance />);
         break;
       case 'Заказ':
-        setCategory(<Basic />);
+        setCategory(<Order />);
         break;
     }
   }, [state.category]);
@@ -85,6 +104,51 @@ const App = () => {
           {category}
           <Back />
         </View>
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              'Вы действительно хотите выйти? ',
+              'Изменения не будет записаны.',
+              [
+                {
+                  text: 'Нет, продолжить',
+                  onPress: () => {
+                    console.log('cancel');
+                  },
+                  style: 'cancel',
+                },
+                {
+                  text: 'Да ',
+                  onPress: () => {
+                    dispatch(setUidAC(''));
+                    dispatch(setZoneAC(''));
+                    dispatch(setTypeAC(''));
+                    dispatch(setProductsAC([]));
+                    dispatch(setProductAC(''));
+                    dispatch(setComingProductsAC([]));
+                    dispatch(removeAllWriteOffAC());
+                    dispatch(setComingProductAC(''));
+                    dispatch(setListInvoiceAC([]));
+                    dispatch(setListDoneInvoiceAC([]));
+                    dispatch(setIsCreateWriteOffAC(false));
+                    dispatch(setCategoryAC('Остаток'));
+                    dispatch(setInvoiceAC({done: true, UIDInvoice: ''}));
+                  },
+                },
+              ],
+            );
+          }}
+          style={{
+            position: 'absolute',
+            top: 1,
+            left: 1,
+            width: 18,
+            height: 18,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text style={{fontWeight: 'bold'}}>⏎</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => dispatch(setShowMenuAC())}
           style={{

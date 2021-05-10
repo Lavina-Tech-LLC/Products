@@ -1,7 +1,7 @@
 // <<<<<< IMPORTS >>>>>>
 import {Alert, Dimensions, ToastAndroid} from 'react-native';
 import api from '../API/api';
-import {getDate} from '../Utils/helpers';
+import {getDate, summa} from '../Utils/helpers';
 
 //   <<<<<< types >>>>>>
 const SET_TYPES = 'RemainderReducer/SET_TYPES';
@@ -113,21 +113,21 @@ export const getProducts = () => (dispatch, getState) => {
     });
 };
 
-export const lastInventoryDone = () => (dispatch, getState) => {
+export const lastInventoryDone = (inventoryID) => (dispatch, getState) => {
   dispatch(setLoaderAC(true));
   const {token, UIDStructure} = getState().UserState;
-  const {UIDInventory, products, type} = getState().RemainderState;
+  const {products, type} = getState().RemainderState;
 
   const body = {
     date: getDate(),
-    UIDInventory: type === 'Принять' ? null : UIDInventory,
+    UIDInventory: type === 'Принять' ? null : inventoryID,
     UIDStructure,
     Products: products.map((product) => ({
       UIDProduct: product.UIDProduct,
       amountrecord: product.Amount,
       amountfact:
-        product.amountfact || String(product.amountfact) === String(0)
-          ? product.amountfact
+        product.amountfact || String(summa(product.amountfact)) === String(0)
+          ? summa(product.amountfact)
           : product.Amount,
     })),
   };
@@ -155,8 +155,8 @@ export const changeInventory = () => (dispatch, getState) => {
       UIDProduct: product.UIDProduct,
       amountrecord: product.Amount,
       amountfact:
-        product.amountfact || String(product.amountfact) === String(0)
-          ? product.amountfact
+        product.amountfact || String(summa(product.amountfact)) === String(0)
+          ? summa(product.amountfact)
           : product.Amount,
     })),
   };
@@ -180,6 +180,7 @@ export const getInventoryUid = () => (dispatch, getState) => {
   )
     .then((res) => {
       dispatch(setInventoryUidAC(res));
+      dispatch(lastInventoryDone(res));
       dispatch(setLoaderAC(false));
     })
     .catch((e) => {

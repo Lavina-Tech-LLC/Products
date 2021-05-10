@@ -184,11 +184,18 @@ export const warehouse = (func) => (dispatch, getData) => {
   const list = date.products.map((i) => {
     return {
       UIDProduct: i.UIDProduct,
-      Amount: i.Amount,
-      Normal: i.Normal,
-      Extra: i.Extra,
+      Amount:
+        i.Amount || String(i.Amount) === '0'
+          ? i.Amount
+          : i.Normal - (i.Balance || 0) > 0
+          ? i.Normal - (i.Balance || 0)
+          : 0,
+      Normal: i.Normal || String(i.Normal) === '0' ? i.Normal : 0,
+      Extra: i.Extra || String(i.Extra) === '0' ? i.Extra : 0,
     };
   });
+
+  console.log(list);
   api('warehouse', 'POST', token, {
     UIDStructure,
     Products: list,

@@ -101,51 +101,52 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
           </View>
           {/* cards */}
           <ScrollView contentContainerStyle={style.productsContainer}>
-            {state.products
-              .filter((item) =>
-                String(item.Barсode).includes(String(state.search)),
-              )
-              .map((item, index) => {
-                const isOnList = orderList.find(
-                  (item2) => item2?.Name === item.Name,
-                );
-                return (
-                  <Card
-                    key={index + String(isOnList)}
-                    index={index}
-                    item={item || addList.includes(item.UIDProduct)}
-                    star={isOnList}
-                    onClickCard={() => {
-                      if (isOnList) {
-                        setDeleteList((prev) => [...prev, item.UIDProduct]);
-                        setAddList((prev) => {
-                          prev.splice(prev.indexOf(item.UIDProduct), 1);
-                          return prev;
-                        });
-                        setOrderList((prev) => {
-                          let ind;
-                          prev.forEach((p, i) => {
-                            if (p.Name === item.Name) {
-                              ind = i;
-                            }
+            {state.products.length > 0 &&
+              state.products
+                .filter((item) =>
+                  String(item.Barсode).includes(String(state.search)),
+                )
+                .map((item, index) => {
+                  const isOnList = orderList.find(
+                    (item2) => item2?.Name === item.Name,
+                  );
+                  return (
+                    <Card
+                      key={index + String(isOnList)}
+                      index={index}
+                      item={item || addList.includes(item.UIDProduct)}
+                      star={isOnList}
+                      onClickCard={() => {
+                        if (isOnList) {
+                          setDeleteList((prev) => [...prev, item.UIDProduct]);
+                          setAddList((prev) => {
+                            prev.splice(prev.indexOf(item.UIDProduct), 1);
+                            return prev;
                           });
-                          prev.splice(ind, 1);
-                          return prev;
-                        });
-                      } else {
-                        setAddList((prev) => [...prev, item.UIDProduct]);
-                        setDeleteList((prev) => {
-                          prev.splice(prev.indexOf(item.UIDProduct), 1);
-                          return prev;
-                        });
-                        setOrderList((prev) => [...prev, item]);
-                      }
-                    }}
-                    selected={false}
-                    state={rem}
-                  />
-                );
-              })}
+                          setOrderList((prev) => {
+                            let ind;
+                            prev.forEach((p, i) => {
+                              if (p.Name === item.Name) {
+                                ind = i;
+                              }
+                            });
+                            prev.splice(ind, 1);
+                            return prev;
+                          });
+                        } else {
+                          setAddList((prev) => [...prev, item.UIDProduct]);
+                          setDeleteList((prev) => {
+                            prev.splice(prev.indexOf(item.UIDProduct), 1);
+                            return prev;
+                          });
+                          setOrderList((prev) => [...prev, item]);
+                        }
+                      }}
+                      selected={false}
+                      state={rem}
+                    />
+                  );
+                })}
           </ScrollView>
           <View
             style={{

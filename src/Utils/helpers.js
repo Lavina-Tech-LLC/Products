@@ -21,3 +21,9 @@ export const getDate = () => {
   const day = date.getDate() > 9 ? date.getDate() : '0' + date.getDate();
   return `${year}${month}${day}`;
 };
+
+export const summa = (val) => {
+  return !val
+    ? null
+    : val.split('+').reduce((a, b) => Number(a) + Number(b), 0);
+};

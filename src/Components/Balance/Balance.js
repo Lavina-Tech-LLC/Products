@@ -140,4 +140,4 @@ export default React.memo(() => {
       </View>
     </View>
   );
-})
+});

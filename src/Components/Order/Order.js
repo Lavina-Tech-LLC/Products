@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Image,
   LogBox,
   ScrollView,
@@ -40,9 +41,21 @@ export default React.memo(() => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   // for date
   const [date, setDate] = useState(new Date());
+  const [indx, setIndx] = useState(4);
   const [date2, setDate2] = useState(
     new Date(getLastDate('year'), getLastDate('month'), getLastDate('day')),
   );
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef?.current) {
+      console.log('scrol', indx);
+      scrollRef.current.scrollToOffset({
+        offset: indx * 95 * order.size,
+        animated: true,
+      });
+    }
+  }, [indx]);
 
   useEffect(() => {
     !order?.products.length &&
@@ -82,15 +95,31 @@ export default React.memo(() => {
     );
   }, [date, date2]);
 
-  const header = [
+  const style = styles(order.size);
+  const render = useCallback(
+    (props) => (
+      <ListItem
+        order={order}
+        dispatch={dispatch}
+        item={props.item}
+        index={props.index}
+        style={style}
+        setcount={setcount}
+        setIndx={setIndx}
+      />
+    ),
+    [],
+  );
+  const keyExtractor = useCallback((item) => item.UIDProduct, []);
+
+  const header = useMemo(() => [
     {text: 'Название', style: 'name'},
     {text: 'Ср. расход в день', style: 'average'},
     {text: 'Остаток', style: 'inputText'},
     {text: 'Норма', style: 'inputText'},
     {text: 'Нужные', style: 'inputText'},
     {text: 'Экстренное количество', style: 'inputText'},
-  ];
-  const style = styles(order.size);
+  ]);
   if (order.loader && !(order.products?.length > 0))
     return (
       <View
@@ -201,126 +230,14 @@ export default React.memo(() => {
           <View style={style.delete} />
         </View>
       </View>
-      <ScrollView contentContainerStyle={style.balanceTable}>
-        {order.products
-          .sort((a, b) => a.Number - b.Number)
-          .map((item, index) => (
-            <View
-              style={style.balanceColumn}
-              key={item.UIDProduct + (index === count ? count : '')}>
-              <View style={[style.sort, style.shadow, style.item]}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setcount(index);
-                    dispatch(
-                      downSortAC({
-                        index,
-                      }),
-                    );
-                    !order.change && dispatch(setChangeAC(true));
-                  }}
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 70 * order.size,
-                  }}>
-                  <Image
-                    style={{width: 50 * order.size}}
-                    source={require('../../assets/icons/open.png')}
-                  />
-                </TouchableOpacity>
-                <View
-                  style={{
-                    width: 5 * order.size,
-                    height: 60 * order.size,
-                    backgroundColor: 'grey',
-                  }}
-                />
-                <TouchableOpacity
-                  onPress={() => {
-                    setcount(index);
-                    dispatch(
-                      upSortAC({
-                        index,
-                      }),
-                    );
-                    !order.change && dispatch(setChangeAC(true));
-                  }}
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 70 * order.size,
-                  }}>
-                  <Image
-                    style={{width: 50 * order.size}}
-                    source={require('../../assets/icons/close.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={[style.shadow, style.name, style.item]}>
-                <Text numberOfLines={1} style={style.text}>
-                  {item.Name}
-                </Text>
-              </View>
-              <View style={[style.shadow, style.Average, style.item]}>
-                <Text style={style.iconText}>☰</Text>
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: 10 * order.size,
-                    width: 200 * order.size,
-                    fontSize: 28 * order.size,
-                  }}>
-                  {item.Average ? String(item.Average) : '0.00'}
-                </Text>
-              </View>
-              <View style={[style.shadow, style.inputText, style.item]}>
-                <Text style={style.iconText}>☰</Text>
-                <Text style={style.textInput}>
-                  {item.Balance !== null ? String(item.Balance) : '0'}
-                </Text>
-              </View>
-              <View style={[style.shadow, style.inputText, style.item]}>
-                <Text style={style.iconText}>☰</Text>
-                <TextInput
-                  keyboardType="numeric"
-                  disableFullscreenUI={true}
-                  value={String(item.Normal)}
-                  style={style.textInput}
-                />
-              </View>
-              <View style={[style.shadow, style.inputText, style.item]}>
-                <Text style={style.iconText}>☰</Text>
-                <TextInput
-                  disableFullscreenUI={true}
-                  value={String(item.Normal - (item.Balance || 0))}
-                  style={style.textInput}
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={[style.shadow, style.inputText, style.item]}>
-                <Text style={style.iconText}>☰</Text>
-                <TextInput
-                  disableFullscreenUI={true}
-                  value={String(item.Extra)}
-                  keyboardType="numeric"
-                  onChangeText={(text) => {
-                    dispatch(changeTextAC({index, text, key: 'Extra'}));
-                  }}
-                  style={style.textInput}
-                />
-              </View>
-              <View style={style.delete}>
-                <TouchableOpacity
-                  onPress={() => {
-                    dispatch(deleteElementAC(index));
-                  }}>
-                  <Text style={{fontSize: 40 * order.size}}>🗑️</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-      </ScrollView>
+      {order?.products.length > 0 && (
+        <FlatList
+          ref={scrollRef}
+          keyExtractor={keyExtractor}
+          data={order.products.sort((a, b) => a.Number - b.Number)}
+          renderItem={render}
+        />
+      )}
       {showDatePicker ? (
         <DateTimePicker
           testID="dateTimePicker"
@@ -347,3 +264,143 @@ export default React.memo(() => {
     </View>
   );
 });
+
+const ListItem = React.memo(
+  ({item, index, style, order, dispatch, setcount, setIndx}) => {
+    const [extra, setExtra] = useState(item.Extra);
+    const [needed, setNeeded] = useState(
+      String(
+        item.Normal - (item.Balance || 0) > 0
+          ? item.Normal - (item.Balance || 0)
+          : 0,
+      ),
+    );
+    const [normal, setNormal] = useState(item.Normal);
+    return (
+      <View style={style.balanceColumn}>
+        <View style={[style.sort, style.shadow, style.item]}>
+          <TouchableOpacity
+            onPress={() => {
+              setcount(index);
+              dispatch(
+                downSortAC({
+                  index,
+                }),
+              );
+              !order.change && dispatch(setChangeAC(true));
+            }}
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 70 * order.size,
+            }}>
+            <Image
+              style={{width: 50 * order.size}}
+              source={require('../../assets/icons/open.png')}
+            />
+          </TouchableOpacity>
+          <View
+            style={{
+              width: 5 * order.size,
+              height: 60 * order.size,
+              backgroundColor: 'grey',
+            }}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              setcount(index);
+              dispatch(
+                upSortAC({
+                  index,
+                }),
+              );
+              !order.change && dispatch(setChangeAC(true));
+            }}
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 70 * order.size,
+            }}>
+            <Image
+              style={{width: 50 * order.size}}
+              source={require('../../assets/icons/close.png')}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={[style.shadow, style.name, style.item]}>
+          <Text numberOfLines={1} style={style.text}>
+            {item.Name}
+          </Text>
+        </View>
+        <View style={[style.shadow, style.Average, style.item]}>
+          <Text style={style.iconText}>☰</Text>
+          <Text
+            numberOfLines={1}
+            style={{
+              marginLeft: 10 * order.size,
+              width: 200 * order.size,
+              fontSize: 28 * order.size,
+            }}>
+            {item.Average ? String(item.Average) : '0.00'}
+          </Text>
+        </View>
+        <View style={[style.shadow, style.inputText, style.item]}>
+          <Text style={style.iconText}>☰</Text>
+          <Text style={style.textInput}>
+            {item.Balance !== null ? String(item.Balance) : '0'}
+          </Text>
+        </View>
+        <View style={[style.shadow, style.inputText, style.item]}>
+          <Text style={style.iconText}>☰</Text>
+          <TextInput
+            keyboardType="numeric"
+            disableFullscreenUI={true}
+            value={String(normal)}
+            style={style.textInput}
+            onFocus={() => setIndx(index)}
+            onChangeText={(text) => {
+              setNormal(text[0] === '0' ? text.slice(1) : text);
+              dispatch(changeTextAC({index, text, key: 'Normal'}));
+            }}
+          />
+        </View>
+        <View style={[style.shadow, style.inputText, style.item]}>
+          <Text style={style.iconText}>☰</Text>
+          <TextInput
+            disableFullscreenUI={true}
+            value={String(needed)}
+            style={style.textInput}
+            keyboardType="numeric"
+            onFocus={() => setIndx(index)}
+            onChangeText={(text) => {
+              setNeeded(text[0] === '0' ? text.slice(1) : text);
+              dispatch(changeTextAC({index, text, key: 'Amount'}));
+            }}
+          />
+        </View>
+        <View style={[style.shadow, style.inputText, style.item]}>
+          <Text style={style.iconText}>☰</Text>
+          <TextInput
+            disableFullscreenUI={true}
+            value={String(extra || 0)}
+            keyboardType="numeric"
+            onFocus={() => setIndx(index)}
+            onChangeText={(text) => {
+              setExtra(text[0] === '0' ? text.slice(1) : text);
+              dispatch(changeTextAC({index, text, key: 'Extra'}));
+            }}
+            style={style.textInput}
+          />
+        </View>
+        <View style={style.delete}>
+          <TouchableOpacity
+            onPress={() => {
+              dispatch(deleteElementAC(index));
+            }}>
+            <Text style={{fontSize: 40 * order.size}}>🗑️</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  },
+);

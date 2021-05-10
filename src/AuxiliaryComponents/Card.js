@@ -1,63 +1,63 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet, View} from 'react-native';
 import GlobalStyles from '../styles/GlobalStyles';
+import {summa} from '../Utils/helpers';
 
-export default ({
-  item,
-  star,
-  state,
-  index,
-  onClickCard,
-  color,
-  size,
-  otherStyle,
-}) => {
-  const style = styles(state.size);
-  const gStyle = GlobalStyles(state.size);
-  return (
-    <TouchableOpacity
-      disabled={onClickCard === undefined}
-      style={[
-        gStyle.shadow,
-        style.product,
-        size || {},
-        otherStyle || {},
-        color ? {backgroundColor: color} : {},
-      ]}
-      onPress={() => {
-        onClickCard();
-      }}>
-      {star ? (
-        <View style={style.star}>
-          <Text style={{fontSize: 25 * state.size}}>★</Text>
-        </View>
-      ) : (
-        <View />
-      )}
-      <Text numberOfLines={1} style={style.productName}>
-        {item.Name}
-      </Text>
-      <View style={style.Barcode}>
-        <Text style={style.icon}>☰</Text>
-        <Text style={style.iconText}>{item.Amount}</Text>
-      </View>
-      {state.invoice?.done && (item.AmountDone || item.AmountDone === 0) ? (
-        <View style={style.Barcode}>
-          <Text style={style.icon}>+</Text>
-          <Text style={style.iconText}>{item.AmountDone}</Text>
-        </View>
-      ) : (
-        <View />
-      )}
-      <View style={style.Barcode}>
-        <Text style={[style.icon, {fontSize: 15 * state.size}]}>║▌║</Text>
-        <Text style={style.iconText}>
-          {item.Barсode || item.Barсode === 0 ? item.Barсode : item.Barcode}
+export default React.memo(
+  ({item, star, state, index, onClickCard, color, size, otherStyle}) => {
+    const style = styles(state.size);
+    const gStyle = GlobalStyles(state.size);
+    return (
+      <TouchableOpacity
+        disabled={onClickCard === undefined}
+        style={[
+          gStyle.shadow,
+          style.product,
+          size || {},
+          otherStyle || {},
+          color ? {backgroundColor: color} : {},
+        ]}
+        onPress={() => {
+          onClickCard();
+        }}>
+        {star ? (
+          <View style={style.star}>
+            <Text style={{fontSize: 25 * state.size}}>★</Text>
+          </View>
+        ) : (
+          <View />
+        )}
+        <Text numberOfLines={1} style={style.productName}>
+          {item.Name}
         </Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
+        <View style={style.Barcode}>
+          <Text style={style.icon}>☰</Text>
+          <Text style={style.iconText}>{item.Amount}</Text>
+        </View>
+        {state.invoice?.done || item.amountfact ? (
+          <View style={style.Barcode}>
+            <Text style={style.icon}>✓</Text>
+            <Text style={style.iconText}>
+              {!state.invoice?.done
+                ? item.amountfact
+                  ? summa(item.amountfact)
+                  : ''
+                : item.AmountDone}
+            </Text>
+          </View>
+        ) : (
+          <View />
+        )}
+        <View style={style.Barcode}>
+          <Text style={[style.icon, {fontSize: 15 * state.size}]}>║▌║</Text>
+          <Text style={style.iconText}>
+            {item.Barсode || item.Barсode === 0 ? item.Barсode : item.Barcode}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  },
+);
 
 const styles = (size) =>
   StyleSheet.create({

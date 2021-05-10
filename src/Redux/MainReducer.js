@@ -38,6 +38,7 @@ const initialState = {
   categories: ['Остаток', 'Приход', 'Списание', 'Баланс', 'Заказ'],
   category: 'Остаток',
   showMenu: true,
+  disable: false,
   products: [],
 };
 
@@ -190,6 +191,8 @@ export const writeoff = (UIDInvoice) => (dispatch, getState) => {
   api('writeoff', 'POST', token, body)
     .then(() => {
       dispatch(getOverheadWriteOff());
+      dispatch(getListProducts());
+      ToastAndroid.show('success', ToastAndroid.SHORT);
     })
     .catch((e) => {
       console.log(e);

@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import {
+  Image,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -8,69 +10,71 @@ import {
   View,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import {setStructureAC, setUidAC} from '../Redux/UserReducer';
 import GlobalStyles from '../styles/GlobalStyles';
-import base64 from 'react-native-base64';
-import {getOption, setTokenAC} from '../Redux/UserReducer';
-import utf8 from 'utf8';
-import Structures from './Structures';
 
 export default () => {
   const state = useSelector((s) => s.mainState);
   const user = useSelector((s) => s.UserState);
   const dispatch = useDispatch();
 
-  const [login, setLogin] = useState('');
-  const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
-
   const size = state.size;
   const gStyle = GlobalStyles(size);
   const style = styles(size);
 
-  const Submit = () => {
-    var bytes = utf8.encode(login + ':' + password);
-    const token = base64.encode(bytes);
-
-    dispatch(setTokenAC(token));
-    dispatch(getOption(token));
-  };
-  if (user.structures.length > 0) return <Structures />;
   return (
     <View style={[gStyle.shadow, style.container]}>
-      <Text style={style.header}>Введите логин и пароль </Text>
-      <View style={style.content}>
-        <TextInput
-          value={String(login)}
-          onChangeText={(text) => setLogin(text)}
-          placeholder="Логин"
-          style={style.TextInput}
-        />
-        <View
-          style={[
-            style.TextInput,
-            {flexDirection: 'row', alignItems: 'center'},
-          ]}>
-          <TextInput
-            secureTextEntry={!show}
-            value={String(password)}
-            onChangeText={(pass) => setPassword(pass)}
-            placeholder="Пароль"
-            style={{width: 400 * size, padding: 0}}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              setShow(true);
-              setTimeout(() => {
-                setShow(false);
-              }, 3000);
-            }}>
-            <Text>{!show ? '👁' : ''}</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={style.button} onPress={() => Submit()}>
-          <Text style={style.buttonText}>Войти 🚪</Text>
+      <View
+        style={{
+          position: 'absolute',
+          left: 50 * state.size,
+          top: 50 * state.size,
+          width: '100%',
+          flexDirection: 'row',
+        }}>
+        <TouchableOpacity onPress={() => dispatch(setStructureAC([]))}>
+          <Text style={{fontWeight: 'bold', fontSize: 70 * state.size}}>⏎</Text>
         </TouchableOpacity>
       </View>
+      <Text style={style.header}> Bыберите структурy</Text>
+      <ScrollView
+        style={{
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          padding: 25 * state.size,
+          backgroundColor: 'grey',
+          borderRadius: 25 * state.size,
+        }}
+        contentContainerStyle={{
+          alignItems: 'center',
+          backgroundColor: 'grey',
+          paddingBottom: 30,
+        }}>
+        {user.structures.length > 0 ? (
+          user.structures.map((item, index) => (
+            <TouchableOpacity
+              key={item.Уид}
+              style={[
+                gStyle.shadow,
+                {
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 950 * state.size,
+                  height: 90 * state.size,
+                  marginTop: 25 * state.size,
+                },
+              ]}
+              onPress={() => dispatch(setUidAC(item.Уид))}>
+              <Text style={{fontWeight: 'bold', fontSize: 35 * state.size}}>
+                {item.Имя}
+              </Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View />
+        )}
+      </ScrollView>
+
       <StatusBar hidden />
     </View>
   );
@@ -83,6 +87,7 @@ const styles = (size) =>
       margin: 29 * size,
       alignItems: 'center',
       backgroundColor: 'white',
+      paddingBottom: 100 * size,
     },
     header: {
       color: 'blue',

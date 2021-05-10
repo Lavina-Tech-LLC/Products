@@ -2,9 +2,7 @@ import React from 'react';
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 export default ({onClick, listInvoice, style, size, state}) => {
   return (
-    <ScrollView
-      style={{}}
-      contentContainerStyle={{flex: 1, alignItems: 'center'}}>
+    <ScrollView style={{}} contentContainerStyle={{alignItems: 'center'}}>
       {listInvoice.map((invoice, index) => (
         <TouchableOpacity
           onPress={() => onClick(invoice.UIDInvoice)}

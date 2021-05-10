@@ -17,18 +17,7 @@ export default React.memo(() => {
 
   useEffect(() => {
     // if (state.type && state.zone && state.product) {
-    if (state.type && state.product.UIDProduct) {
-      setSelection(
-        <Calculator
-          state={state}
-          done={(amount) => {
-            dispatch(changeAmountAC(amount));
-            dispatch(setProductAC(''));
-          }}
-        />,
-      );
-      //} else if (state.type && state.zone) {
-    } else if (state.type) {
+    if (state.type) {
       setSelection(<SelectProduct />);
     }
     // if (state.type) {

@@ -72,17 +72,17 @@ export const styles = (size) =>
       fontSize: 22 * size,
     },
     textInput: {
-      width: 105 * size,
       height: 50 * size,
       padding: 0,
       textAlign: 'center',
       fontSize: 28 * size,
     },
     inputText: {
-      width: 120 * size,
+      width: 125 * size,
     },
     iconText: {
       fontSize: 30 * size,
+      marginRight: 10 * size,
       fontWeight: 'bold',
     },
     item: {

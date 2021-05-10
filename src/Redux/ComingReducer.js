@@ -10,9 +10,9 @@ const SET_PRODUCT = 'ComingReducer/SET_PRODUCT';
 const CHANGE_AMOUNT = 'ComingReducer/CHANGE_AMOUNT';
 
 // <<<<<< IMPORTS >>>>>>
-import {Dimensions} from 'react-native';
+import {Dimensions, ToastAndroid} from 'react-native';
 import api from '../API/api';
-import {getDate} from '../Utils/helpers';
+import {getDate, summa} from '../Utils/helpers';
 
 // <<<<<< iNITIAL STATE >>>>>>
 const initialState = {
@@ -84,6 +84,12 @@ export const getListDoneInvoice = (type) => (dispatch, getState) => {
     token,
   )
     .then((res) => {
+      res.length < 1 &&
+        ToastAndroid.show(
+          (type === 'done' ? 'Принятые Накладные' : 'Накладные (для прихода)') +
+            ' пока пустой',
+          ToastAndroid.SHORT,
+        );
       dispatch(
         type === 'done' ? setListDoneInvoiceAC(res) : setListInvoiceAC(res),
       );
@@ -108,6 +114,21 @@ export const getProducts = (type, uid) => (dispatch, getState) => {
     });
 };
 
+export const synchStockWarehouse = (func) => (dispatch, getState) => {
+  const {token, UIDStructure} = getState().UserState;
+  api('desk/synchstockwarehouse', 'POST', token, {id: UIDStructure})
+    .then(() => {
+      ToastAndroid.show('success', ToastAndroid.SHORT);
+      dispatch(getListDoneInvoice(''));
+      dispatch(getListDoneInvoice('done'));
+      func();
+    })
+    .catch((e) => {
+      console.log(e);
+      func();
+    });
+};
+
 export const invoice = (type, uid) => (dispatch, getState) => {
   const {token, UIDStructure} = getState().UserState;
   const {invoice, products} = getState().ComingState;
@@ -116,7 +137,10 @@ export const invoice = (type, uid) => (dispatch, getState) => {
     UIDInvoice: invoice.UIDInvoice,
     Products: products.map((product) => ({
       UIDProduct: product.UIDProduct,
-      Amount: product.amountfact,
+      Amount:
+        product.amountfact || String(summa(product.amountfact)) === String(0)
+          ? summa(product.amountfact)
+          : product.Amount,
     })),
   };
   api('invoice', 'POST', token, body)
