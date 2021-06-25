@@ -13,8 +13,8 @@ export const getLastDate = (key) => {
   }
 };
 
-export const getDate = () => {
-  const date = new Date();
+export const getDate = (d) => {
+  const date = d ? d : new Date();
   const year = date.getFullYear();
   const month =
     date.getMonth() > 8 ? date.getMonth() : '0' + (date.getMonth() + 1);
@@ -25,5 +25,14 @@ export const getDate = () => {
 export const summa = (val) => {
   return !val
     ? null
+    : val[0] === '-'
+    ? val
     : val.split('+').reduce((a, b) => Number(a) + Number(b), 0);
+};
+
+export const dateToString = (date) => {
+  const year = date ? date.getFullYear() : '?';
+  const month = date ? date.getMonth() + 1 : '?';
+  const day = date ? date.getDate() : '?';
+  return `${year}/${month}/${day}`;
 };

@@ -16,8 +16,10 @@ import {
   changeNumber,
   changeTextAC,
   deleteElementAC,
+  deleteWarehouseList,
   downSortAC,
   getProducts,
+  refresh,
   setChangeAC,
   setEndDateAC,
   setStartDateAC,
@@ -28,6 +30,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import {getLastDate} from '../../Utils/helpers';
 import {styles} from './Styles';
 import Modal from './Modal';
+
 
 export default React.memo(() => {
   //redux hooks
@@ -49,7 +52,6 @@ export default React.memo(() => {
 
   useEffect(() => {
     if (scrollRef?.current) {
-      console.log('scrol', indx);
       scrollRef.current.scrollToOffset({
         offset: indx * 95 * order.size,
         animated: true,
@@ -115,7 +117,7 @@ export default React.memo(() => {
   const header = useMemo(() => [
     {text: 'Название', style: 'name'},
     {text: 'Ср. расход в день', style: 'average'},
-    {text: 'Остаток', style: 'inputText'},
+    {text: 'Остаток', style: 'inputText'}, 
     {text: 'Норма', style: 'inputText'},
     {text: 'Нужные', style: 'inputText'},
     {text: 'Экстренное количество', style: 'inputText'},
@@ -164,6 +166,7 @@ export default React.memo(() => {
                 fontSize: 35 * order.size,
                 fontWeight: 'bold',
                 marginRight: 30 * order.size,
+                marginLeft: 20 * order.size,
               }}>
               {String(date2.getDate()) +
                 '/' +
@@ -187,6 +190,16 @@ export default React.memo(() => {
                 '/' +
                 date.getFullYear()}
             </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{marginLeft: 35 * order.size}}
+            onPress={() => {
+              dispatch(refresh());
+            }}>
+            <Image
+              source={require('../../assets/icons/sync.png')}
+              style={{width: 60 * order.size, height: 60 * order.size}}
+            />
           </TouchableOpacity>
         </View>
 
@@ -395,7 +408,7 @@ const ListItem = React.memo(
         <View style={style.delete}>
           <TouchableOpacity
             onPress={() => {
-              dispatch(deleteElementAC(index));
+              dispatch(deleteWarehouseList([item.UIDProduct], '', {index}));
             }}>
             <Text style={{fontSize: 40 * order.size}}>🗑️</Text>
           </TouchableOpacity>

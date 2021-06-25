@@ -116,7 +116,10 @@ export const getProducts = ({startdate, enddate}) => (dispatch, getData) => {
     });
 };
 
-export const deleteWarehouseList = (list, func) => (dispatch, getData) => {
+export const deleteWarehouseList = (list, func, index) => (
+  dispatch,
+  getData,
+) => {
   const {token, UIDStructure} = getData().UserState;
   const date = getData().OrderState;
   api('deletewarehouselist', 'POST', token, {
@@ -125,13 +128,14 @@ export const deleteWarehouseList = (list, func) => (dispatch, getData) => {
   })
     .then((res) => {
       dispatch(setLoaderAC(false));
-      dispatch(getProducts({startdate: date.startdate, enddate: date.enddate}));
-      func(false);
+      index && dispatch(deleteElementAC(index.index));
+      //dispatch(getProducts({startdate: date.startdate, enddate: date.enddate}));
+      func && func(false);
     })
     .catch((e) => {
       dispatch(setLoaderAC(false));
       console.log(e);
-      func(false);
+      func && func(false);
     });
 };
 
@@ -152,6 +156,10 @@ export const addWarehouseList = (list, func) => (dispatch, getData) => {
     .catch((e) => {
       dispatch(setLoaderAC(false));
     });
+};
+export const refresh = () => (dispatch, getData) => {
+  const date = getData().OrderState;
+  dispatch(getProducts({startdate: date.startdate, enddate: date.enddate}));
 };
 
 export const changeNumber = (func) => (dispatch, getData) => {
@@ -195,7 +203,6 @@ export const warehouse = (func) => (dispatch, getData) => {
     };
   });
 
-  console.log(list);
   api('warehouse', 'POST', token, {
     UIDStructure,
     Products: list,

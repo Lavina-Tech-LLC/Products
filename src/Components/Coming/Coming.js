@@ -17,7 +17,10 @@ import {
   getListDoneInvoice,
   getProducts,
   invoice,
+  removeInvoiceAC,
   setInvoiceAC,
+  setInvoiceProductsAC,
+  setIsChangeAC,
   setProductAC,
   setSearchComingAC,
   synchStockWarehouse,
@@ -28,6 +31,7 @@ import InvoiceCard from '../../AuxiliaryComponents/InvoiceCard';
 import Card from '../../AuxiliaryComponents/Card';
 import Calculator from '../../AuxiliaryComponents/Calculator';
 import {summa} from '../../Utils/helpers';
+import {sortCard} from '../../Utils/sort';
 
 export default React.memo(() => {
   const dispatch = useDispatch();
@@ -88,6 +92,20 @@ export default React.memo(() => {
             editable
             style={style.input}
           />
+          {state.search ? (
+            <TouchableOpacity
+              onPress={() => dispatch(setSearchComingAC(''))}
+              style={{
+                width: 60 * state.size,
+                height: 60 * state.size,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{fontSize: 20 * state.size}}>✕</Text>
+            </TouchableOpacity>
+          ) : (
+            <View />
+          )}
           <TouchableOpacity
             onPress={() => dispatch(setScanerAC(true))}
             style={style.barCodeButton}>
@@ -113,34 +131,40 @@ export default React.memo(() => {
           <InvoiceCard
             state={state}
             onClick={(uid) => {
-              if (state.products.length > 0)
-                Alert.alert(
-                  'вы действительно хотите изменить накладные? ',
-                  'Изменения не будет записаны.',
-                  [
-                    {
-                      text: 'Нет, продолжить',
-                      onPress: () => {
-                        console.log('cancel');
-                      },
-                      style: 'cancel',
+              if (state.products.length > 0 && state.isChange)
+                Alert.alert('', ' вы хотите сохранить изменения', [
+                  {
+                    text: 'Нет',
+                    onPress: () => {
+                      dispatch(getProducts('listInvoice', uid));
+                      dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
+                      if (scrollRef?.current)
+                        scrollRef.current.scrollTo({y: 0});
                     },
-                    {
-                      text: 'Да ',
-                      onPress: () => {
-                        dispatch(getProducts('', uid));
-                        dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
-                        if (scrollRef?.current)
-                          scrollRef.current.scrollTo({y: 0});
-                      },
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Да ',
+                    onPress: () => {
+                      dispatch(
+                        setInvoiceProductsAC({
+                          id: state.invoice.UIDInvoice,
+                          type: '',
+                        }),
+                      );
+                      dispatch(getProducts('listInvoice', uid));
+                      dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
+                      if (scrollRef?.current)
+                        scrollRef.current.scrollTo({y: 0});
                     },
-                  ],
-                );
+                  },
+                ])
               else {
-                dispatch(getProducts('', uid));
+                dispatch(getProducts('listInvoice', uid));
                 dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
                 if (scrollRef?.current) scrollRef.current.scrollTo({y: 0});
               }
+              dispatch(setIsChangeAC(false));
             }}
             size={state.size}
             style={style}
@@ -160,13 +184,13 @@ export default React.memo(() => {
                 flexDirection: 'row',
                 flexWrap: 'wrap',
               }}>
-              {state.products
+              {sortCard(state.products)
                 .filter((item) =>
                   String(item.Barcode).includes(String(state.search)),
                 )
                 .map((item, index) => (
                   <Card
-                    key={index}
+                    key={index + 'af' + item.Amount}
                     index={index}
                     item={item}
                     color={
@@ -209,6 +233,7 @@ export default React.memo(() => {
                       ) {
                         dispatch(invoice());
                         dispatch(setInvoiceAC({done: false, UIDInvoice: ''}));
+                        dispatch(removeInvoiceAC(state.invoice.UIDInvoice));
                       } else
                         ToastAndroid.show(
                           'Не все продукты в накладной были проверены',
@@ -251,34 +276,10 @@ export default React.memo(() => {
           <InvoiceCard
             state={state}
             onClick={(uid) => {
-              if (state.products.length > 0)
-                Alert.alert(
-                  'вы действительно хотите изменить накладные? ',
-                  'Изменения не будет записаны.',
-                  [
-                    {
-                      text: 'Нет, продолжить',
-                      onPress: () => {
-                        console.log('cancel');
-                      },
-                      style: 'cancel',
-                    },
-                    {
-                      text: 'Да ',
-                      onPress: () => {
-                        dispatch(getProducts('done', uid));
-                        dispatch(setInvoiceAC({done: true, UIDInvoice: uid}));
-                        if (scrollRef?.current)
-                          scrollRef.current.scrollTo({y: 0});
-                      },
-                    },
-                  ],
-                );
-              else {
-                dispatch(getProducts('done', uid));
-                dispatch(setInvoiceAC({done: true, UIDInvoice: uid}));
-                if (scrollRef?.current) scrollRef.current.scrollTo({y: 0});
-              }
+              dispatch(getProducts('listDoneInvoice', uid));
+              dispatch(setInvoiceProductsAC({id: uid, type: 'done'}));
+              dispatch(setInvoiceAC({done: true, UIDInvoice: uid}));
+              if (scrollRef?.current) scrollRef.current.scrollTo({y: 0});
             }}
             size={state.size}
             style={style}

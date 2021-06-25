@@ -1,5 +1,6 @@
 //   <<<<<< types >>>>>>
 const SET_PATH = 'MainReducer/SET_PATH';
+const SET_DATE = 'MainReducer/SET_DATE';
 const SET_SEARCH = 'MainReducer/SET_SEARCH';
 const SET_INDEX = 'MainReducer/SET_INDEX';
 const SET_SCANER = 'MainReducer/SET_SCANER';
@@ -16,6 +17,7 @@ const ISCREATE_WRITEOFF = 'MainReducer/ISCREATE_WRITEOFF';
 const SET_OVERHEAD_WRITEOFF = 'MainReducer/SET_OVERHEAD_WRITEOFF';
 const SET_WRITEOFF_INFO = 'MainReducer/SET_WRITEOFF_INFO';
 const SET_LIST_PRODUCTS = 'MainReducer/SET_LIST_PRODUCTS';
+const SET_LIST_ALL_PRODUCTS = 'MainReducer/SET_LIST_ALL_PRODUCTS';
 
 // <<<<<< IMPORTS >>>>>>
 import {Dimensions} from 'react-native';
@@ -27,6 +29,7 @@ const initialState = {
   search: '',
   //for Create.js
   index: 0,
+  date: new Date(),
   isCreate: false,
   scaner: false,
   writeoff: [{UIDProduct: '', bc: '', name: '', amount: 0, disable: false}],
@@ -40,6 +43,7 @@ const initialState = {
   showMenu: true,
   disable: false,
   products: [],
+  allProducts: [],
 };
 
 // <<<<<< REDUCER >>>>>>
@@ -61,10 +65,14 @@ export default (state = initialState, action) => {
           history: [...state.navigation.history, state.navigation.path],
         },
       };
+    case SET_DATE:
+      return {...state, date: action.payload};
     case SET_PARAMS:
       return {...state, params: action.payload};
     case SET_LIST_PRODUCTS:
       return {...state, products: action.payload};
+    case SET_LIST_ALL_PRODUCTS:
+      return {...state, allProducts: action.payload};
     case SET_OVERHEAD_WRITEOFF:
       return {...state, overheadWriteOff: action.payload};
     case SET_WRITEOFF_INFO:
@@ -113,8 +121,13 @@ export default (state = initialState, action) => {
 
 // <<<<<< ACTION CREATOR >>>>>>
 export const setPathAC = (payload) => ({type: SET_PATH, payload});
+export const setDateAC = (payload) => ({type: SET_DATE, payload});
 export const setListProductsAC = (payload) => ({
   type: SET_LIST_PRODUCTS,
+  payload,
+});
+export const setListAllProductsAC = (payload) => ({
+  type: SET_LIST_ALL_PRODUCTS,
   payload,
 });
 export const addWriteOffAC = () => ({type: ADD_WRITEOFF});
@@ -142,10 +155,26 @@ export const setCategoryAC = (payload) => ({type: SET_CATEGORY, payload});
 export const setShowMenuAC = () => ({type: SET_SHOWMENU});
 
 // <<<<<< THUNKS >>>>>>
+
+export const getAllProducts = () => (dispatch, getState) => {
+  const {token, UIDStructure} = getState().UserState;
+
+  api('allproducts', 'GET', token)
+    .then((res) => {
+      dispatch(setListAllProductsAC(res));
+      dispatch(setLoaderAC(false));
+    })
+    .catch((e) => {
+      dispatch(setLoaderAC(false));
+      console.log(e);
+    });
+};
+
 export const getOverheadWriteOff = () => (dispatch, getState) => {
   const {token, UIDStructure} = getState().UserState;
+  const {date} = getState().mainState;
   api(
-    `listwriteoff?UIDStructure=${UIDStructure}&date=${getDate()}`,
+    `listwriteoff?UIDStructure=${UIDStructure}&date=${getDate(date)}`,
     'GET',
     token,
   )

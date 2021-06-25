@@ -13,11 +13,14 @@ import {useDispatch, useSelector} from 'react-redux';
 import GlobalStyles from '../../../styles/GlobalStyles';
 import {setSearchAC, setScanerAC} from '../../../Redux/MainReducer';
 import {
+  addInventory,
   changeAmountAC,
   changeInventory,
+  fetchRemainders,
   getInventoryUid,
   getProducts,
   lastInventoryDone,
+  setInventoryUidAC,
   setProductAC,
   setProductsAC,
   setTypeAC,
@@ -38,7 +41,7 @@ export default React.memo(() => {
   const scrollRef = useRef(0);
   useEffect(() => {
     if (state.products.length < 1) {
-      dispatch(getProducts());
+      dispatch(fetchRemainders());
     }
   }, []);
   return (
@@ -125,8 +128,8 @@ export default React.memo(() => {
           onPress={() => {
             //state.type === 'Принять' && dispatch(changeInventory());
             if (state.type === 'Принять') dispatch(lastInventoryDone());
-            else dispatch(getInventoryUid());
             dispatch(setProductsAC([]));
+            dispatch(setInventoryUidAC(null));
             dispatch(setTypeAC(''));
             dispatch(setZoneAC(''));
           }}
@@ -141,18 +144,19 @@ export default React.memo(() => {
             margin: 30 * state.size,
           }}>
           <Text style={{fontWeight: 'bold', fontSize: 35 * state.size}}>
-            Отправить
+            {state.type === 'Принять' ? 'Отправить' : 'Закрыть '}
           </Text>
         </TouchableOpacity>
       </ScrollView>
       <View style={{display: !state.product ? 'none' : 'flex', flex: 1}}>
         <Calculator
           state={state}
-          done={(amount, index) => {
-            dispatch(changeAmountAC(amount));
+          done={(amount, index, UIDProduct) => {
+            if (state.type === 'Принять')
+              dispatch(changeAmountAC({UIDProduct, amount}));
+            else dispatch(addInventory({UIDProduct, Amount: amount}));
             dispatch(setProductAC(''));
             setTimeout(() => {
-              console.log(y);
               if (scrollRef?.current) scrollRef.current.scrollTo({y: position});
             }, 300);
           }}

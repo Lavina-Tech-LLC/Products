@@ -1,3 +1,5 @@
+import {summa} from './helpers';
+
 export const newList = (list) => {
   let val = null;
   let val2 = null;
@@ -24,4 +26,26 @@ export const newList = (list) => {
       return obj;
     })
     .sort((a, b) => a.Number - b.Number);
+};
+
+export const sortCard = (list) => {
+  const n1 = [];
+  const n2 = [];
+  const n3 = [];
+  list
+    .sort((a, b) => {
+      if (a.Name < b.Name) {
+        return -1;
+      }
+      if (a.Name > b.Name) {
+        return 1;
+      }
+    })
+    .forEach((item) => {
+      if (item.amountfact) {
+        if (summa(item.amountfact) === item.Amount) n3.push(item);
+        else n2.push(item);
+      } else n1.push(item);
+    });
+  return [...n1, ...n2, ...n3];
 };

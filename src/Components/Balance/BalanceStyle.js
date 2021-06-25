@@ -102,6 +102,10 @@ export const styles = (size) =>
     // footer
     footerContainer: {
       width: '100%',
+      padding: 40 * size,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(1,1,1,.4)',
     },
     footer: {
       width: 1450 * size,

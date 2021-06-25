@@ -9,6 +9,7 @@ import {
   Dimensions,
   Image,
   Alert,
+  Modal,
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import Back from './src/AuxiliaryComponents/goBack';
@@ -18,9 +19,11 @@ import Coming from './src/Components/Coming/Coming';
 import Order from './src/Components/Order/Order';
 import Remainder from './src/Components/Remainder/Remainder';
 import WriteOff from './src/Components/WriteOff/WriteOff';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   removeAllWriteOffAC,
   setCategoryAC,
+  setDateAC,
   setIsCreateWriteOffAC,
   setShowMenuAC,
 } from './src/Redux/MainReducer';
@@ -39,11 +42,18 @@ import {
   setListInvoiceAC,
   setInvoiceAC,
 } from './src/Redux/ComingReducer';
+import {dateToString} from './src/Utils/helpers';
+import Nomenclatures from './src/Components/Nomenclatures/Nomenclatures';
 
 const App = () => {
   const [category, setCategory] = useState(<WriteOff />);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const state = useSelector((state) => state.mainState);
-  const {UIDStructure, structures} = useSelector((state) => state.UserState);
+  const {UIDStructure, structures, isBoss} = useSelector(
+    (state) => state.UserState,
+  );
   const dispatch = useDispatch();
   const style = styles(state.size);
   useEffect(() => {
@@ -52,6 +62,7 @@ const App = () => {
       dispatch(setUidAC(''));
     };
   }, []);
+
   useEffect(() => {
     switch (state.category) {
       case 'Остаток':
@@ -68,6 +79,9 @@ const App = () => {
         break;
       case 'Заказ':
         setCategory(<Order />);
+        break;
+      case 'Nomenclatures':
+        setCategory(<Nomenclatures />);
         break;
     }
   }, [state.category]);
@@ -140,38 +154,158 @@ const App = () => {
           }}
           style={{
             position: 'absolute',
-            top: 1,
-            left: 1,
-            width: 18,
-            height: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Text style={{fontWeight: 'bold'}}>⏎</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => dispatch(setShowMenuAC())}
-          style={{
-            position: 'absolute',
-            top: 1,
-            right: 1,
-            width: 18,
-            height: 18,
-            borderRadius: 9,
+            top: 0,
+            left: 0,
+            width: 50 * state.size,
+            height: 50 * state.size,
+            borderBottomRightRadius: 50 * state.size,
             borderWidth: 1,
             borderColor: 'orange',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'center',
           }}>
-          <Image
+          <Text style={{fontWeight: 'bold', fontSize: 40 * state.size}}>⏎</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setModalVisible(true)}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: 50 * state.size,
+            height: 50 * state.size,
+            borderBottomLeftRadius: 50 * state.size,
+            borderWidth: 1,
+            borderColor: 'orange',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+          }}>
+          <Text style={{fontSize: 20 * state.size}}>⚙️</Text>
+          {/* <Image
             source={
               state.showMenu
                 ? require('./src/assets/icons/close.png')
                 : require('./src/assets/icons/open.png')
             }
             style={{width: 18 * state.size, height: 10 * state.size}}
-          />
+          /> */}
         </TouchableOpacity>
+        {/* modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}>
+          <View style={style.modalContainer}>
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={style.modalClose}
+            />
+            <View style={style.modalContent}>
+              <View style={style.modalHead}>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: 35 * state.size,
+                    }}>
+                    ✕
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{width: '100%', alignItems: 'center'}}>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: 35 * state.size,
+                  }}>
+                  {'🍕 ' +
+                    structures.find((item) => item.Уид === UIDStructure)?.Имя}
+                </Text>
+              </View>
+              <View style={style.modalMain}>
+                <TouchableOpacity
+                  onPress={() => dispatch(setShowMenuAC())}
+                  style={style.openCloseMenu}>
+                  <View
+                    style={{
+                      width: 70 * state.size,
+                      height: 70 * state.size,
+                      backgroundColor: 'white',
+                      borderColor: 'green',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 35 * state.size,
+                      borderWidth: 1,
+                    }}>
+                    <Image
+                      source={
+                        state.showMenu
+                          ? require('./src/assets/icons/close.png')
+                          : require('./src/assets/icons/open.png')
+                      }
+                      style={{
+                        width: 54 * state.size,
+                        height: 30 * state.size,
+                      }}
+                    />
+                  </View>
+                  <Text style={{color: 'white', marginTop: 30 * state.size}}>
+                    {!state.showMenu ? 'Oткрыть меню' : 'Закрыть меню'}
+                  </Text>
+                </TouchableOpacity>
+                {isBoss && (
+                  <TouchableOpacity
+                    style={[
+                      style.menuItem,
+                      state.category === 'Nomenclatures' ? style.select : {},
+                    ]}
+                    onPress={() => dispatch(setCategoryAC('Nomenclatures'))}>
+                    <Text
+                      style={[
+                        style.menuText,
+                        state.category === 'Nomenclatures'
+                          ? style.TextSelect
+                          : {},
+                      ]}>
+                      Номенклатуры
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  disabled={!isBoss}
+                  onPress={() => {
+                    setShowDatePicker(true);
+                  }}>
+                  <Text style={{color: 'white'}}>
+                    📅{'  ' + dateToString(state.date)}
+                  </Text>
+                  <Text style={{color: 'white', marginTop: 30 * state.size}}>
+                    {isBoss ? ' Задать дату' : ''}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          {showDatePicker ? (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={state.date || new Date()}
+              is24Hour={true}
+              display="calendar"
+              onChange={(event, d) => {
+                setShowDatePicker(false);
+                d && dispatch(setDateAC(d));
+              }}
+            />
+          ) : (
+            <View />
+          )}
+        </Modal>
       </View>
     ) : (
       <Scaner />
@@ -234,6 +368,37 @@ const styles = (size) => {
     },
     hide: {
       display: 'none',
+    },
+
+    //for Modal
+    modalContainer: {
+      flex: 1,
+    },
+    modalClose: {
+      width: '100%',
+      height: Dimensions.get('window').height * 0.6,
+    },
+    modalContent: {
+      width: '100%',
+      height: Dimensions.get('window').height * 0.4,
+      backgroundColor: 'rgba(1,1,1,.5)',
+    },
+    modalHead: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    modalMain: {
+      width: '100%',
+      marginRight: 40 * size,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
+    openCloseMenu: {
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   });
 };

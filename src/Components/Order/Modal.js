@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Image,
   Keyboard,
   Modal,
@@ -30,6 +31,7 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
   const [addList, setAddList] = useState([]);
   const [deleteList, setDeleteList] = useState([]);
   const [orderList, setOrderList] = useState([]);
+  const [rendering, setRendering] = useState(0);
   const dispatch = useDispatch();
   const style = modalStyles(order.size);
   const gStyle = GlobalStyles(order.size);
@@ -37,17 +39,50 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
   useEffect(() => {
     dispatch(getListProducts());
     setOrderList(order.products);
-    keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
-      setMarginB(e.endCoordinates.height);
-    });
-    keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () =>
-      setMarginB(10 * state.size),
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (e) => {
+        setMarginB(e.endCoordinates.height);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => setMarginB(10 * state.size),
     );
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
   }, []);
+  useEffect(() => {
+    setOrderList(order.products);
+    setAddList([]);
+    setAddList([]);
+  }, [modalVisible]);
+
+  const keyExtractor = useCallback(
+    (item, index) => {
+      return index + String(orderList.length);
+    },
+    [rendering, orderList],
+  );
+
+  const render = useCallback(
+    (props) => {
+      return (
+        <Cards
+          {...props}
+          setAddList={setAddList}
+          setDeleteList={setDeleteList}
+          setOrderList={setOrderList}
+          rem={rem}
+          orderList={orderList}
+          setRendering={setRendering}
+        />
+      );
+    },
+    [rendering, orderList],
+  );
 
   return state.loading ? (
     <ActivityIndicator size="large" color="blue" />
@@ -100,54 +135,22 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
             </View>
           </View>
           {/* cards */}
-          <ScrollView contentContainerStyle={style.productsContainer}>
-            {state.products.length > 0 &&
-              state.products
-                .filter((item) =>
-                  String(item.Barсode).includes(String(state.search)),
-                )
-                .map((item, index) => {
-                  const isOnList = orderList.find(
-                    (item2) => item2?.Name === item.Name,
-                  );
-                  return (
-                    <Card
-                      key={index + String(isOnList)}
-                      index={index}
-                      item={item || addList.includes(item.UIDProduct)}
-                      star={isOnList}
-                      onClickCard={() => {
-                        if (isOnList) {
-                          setDeleteList((prev) => [...prev, item.UIDProduct]);
-                          setAddList((prev) => {
-                            prev.splice(prev.indexOf(item.UIDProduct), 1);
-                            return prev;
-                          });
-                          setOrderList((prev) => {
-                            let ind;
-                            prev.forEach((p, i) => {
-                              if (p.Name === item.Name) {
-                                ind = i;
-                              }
-                            });
-                            prev.splice(ind, 1);
-                            return prev;
-                          });
-                        } else {
-                          setAddList((prev) => [...prev, item.UIDProduct]);
-                          setDeleteList((prev) => {
-                            prev.splice(prev.indexOf(item.UIDProduct), 1);
-                            return prev;
-                          });
-                          setOrderList((prev) => [...prev, item]);
-                        }
-                      }}
-                      selected={false}
-                      state={rem}
-                    />
-                  );
-                })}
-          </ScrollView>
+
+          {state.products.length > 0 && (
+            <FlatList
+              extraData={rendering}
+              numColumns={3}
+              keyExtractor={keyExtractor}
+              data={state.products.sort((a) => {
+                const isOnList = orderList.find((item2) => {
+                  return item2?.Name === a.Name;
+                });
+                return isOnList ? 1 : 0;
+              })}
+              contentContainerStyle={style.productsContainer}
+              renderItem={render}
+            />
+          )}
           <View
             style={{
               width: '100%',
@@ -181,3 +184,57 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
     </Modal>
   );
 });
+
+const Cards = React.memo(
+  ({
+    item,
+    index,
+    setDeleteList,
+    setAddList,
+    orderList,
+    setOrderList,
+    rem,
+    setRendering,
+  }) => {
+    const isOnList = orderList.find((item2) => {
+      return item2?.UIDProduct === item.UIDProduct;
+    });
+    return (
+      <Card
+        index={index}
+        key={isOnList + index}
+        item={item || addList.includes(item.UIDProduct)}
+        star={isOnList}
+        onClickCard={() => {
+          if (isOnList) {
+            setDeleteList((prev) => [...prev, item.UIDProduct]);
+            setAddList((prev) => {
+              prev.splice(prev.indexOf(item.UIDProduct), 1);
+              return prev;
+            });
+            setOrderList((prev) => {
+              let ind;
+              prev.forEach((p, i) => {
+                if (p.UIDProduct === item.UIDProduct) {
+                  ind = i;
+                }
+              });
+              prev.splice(ind, 1);
+              return prev;
+            });
+          } else {
+            setAddList((prev) => [...prev, item.UIDProduct]);
+            setDeleteList((prev) => {
+              prev.splice(prev.indexOf(item.UIDProduct), 1);
+              return prev;
+            });
+            setOrderList((prev) => [...prev, item]);
+          }
+          setRendering((prev) => ++prev);
+        }}
+        selected={false}
+        state={rem}
+      />
+    );
+  },
+);

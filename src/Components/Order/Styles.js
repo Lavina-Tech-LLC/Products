@@ -144,10 +144,8 @@ export const modalStyles = (size) =>
       marginTop: 20 * size,
     },
     productsContainer: {
-      flexDirection: 'row',
       paddingTop: 25 * size,
       paddingBottom: 25 * size,
-      flexWrap: 'wrap',
       width: '100%',
     },
   });

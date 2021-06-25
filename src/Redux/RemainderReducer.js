@@ -50,8 +50,13 @@ export default (state = initialState, action) => {
       return {...state, UIDInventory: action.payload};
     case CHANGE_AMOUNT:
       const prd = state.products.map((p) => {
-        if (state.product && p.UIDProduct === state.product.UIDProduct) {
-          p.amountfact = action.payload;
+        if (p.UIDProduct === action.payload.UIDProduct) {
+          p.amountfact = action.payload.amount;
+          if (
+            action.payload.onAccount ||
+            String(action.payload.onAccount) === '0'
+          )
+            product.Amount = action.payload.onAccount;
         }
         return p;
       });
@@ -90,11 +95,14 @@ export const setLoaderAC = (payload) => ({type: SET_LOADER, payload});
 export const getProducts = () => (dispatch, getState) => {
   const {token, UIDStructure} = getState().UserState;
   const {type} = getState().RemainderState;
+  const {date} = getState().mainState;
   dispatch(setLoaderAC(true));
   const getUrl = () => {
     switch (type) {
       case 'Принять':
-        return `lastinventory?UIDStructure=${UIDStructure}&date=${getDate()}`;
+        return `lastinventory?UIDStructure=${UIDStructure}&date=${getDate(
+          date,
+        )}`;
       case 'Сдать':
         return `listproducts/${UIDStructure}`;
 
@@ -113,25 +121,85 @@ export const getProducts = () => (dispatch, getState) => {
     });
 };
 
+export const fetchRemainders = () => async (dispatch, getState) => {
+  const {token, UIDStructure} = getState().UserState;
+  const {type} = getState().RemainderState;
+  const {date} = getState().mainState;
+
+  const Type = () => {
+    switch (type) {
+      case 'Принять':
+        return 'accept';
+      case 'Сдать':
+        return 'passOff';
+
+      default:
+        return '';
+    }
+  };
+
+  let lastId = await api(
+    `getinventoryuid?UIDStructure=${UIDStructure}&Type=${Type()}&date=${getDate(
+      date,
+    )}`,
+    'GET',
+    token,
+  );
+  if (Type() == 'accept') {
+    const data = await api(
+      lastId
+        ? `getinventory?UIDInventory=${lastId}`
+        : `lastinventory?UIDStructure=${UIDStructure}&date=${getDate(date)}`,
+      'GET',
+      token,
+    );
+    if (data) {
+      dispatch(setProductsAC(data));
+    }
+  } else {
+    const data = await api(`listproducts/${UIDStructure}`, 'GET', token);
+    if (data) {
+      dispatch(setProductsAC(data));
+    }
+  }
+  if (lastId) {
+    dispatch(setInventoryUidAC(lastId));
+  } else if (Type == 'passOff' && !lastId) {
+    lastId = await api(`inventory`, 'POST', token, {
+      UIDstructure: UIDStructure,
+    });
+    dispatch(setInventoryUidAC(lastId.UID));
+  }
+};
+
 export const lastInventoryDone = (inventoryID) => (dispatch, getState) => {
   dispatch(setLoaderAC(true));
   const {token, UIDStructure} = getState().UserState;
-  const {products, type} = getState().RemainderState;
+  const {products, UIDInventory, type} = getState().RemainderState;
+  const {date} = getState().mainState;
 
   const body = {
-    date: getDate(),
-    UIDInventory: type === 'Принять' ? null : inventoryID,
+    date: getDate(date),
+    UIDInventory,
     UIDStructure,
-    Products: products.map((product) => ({
-      UIDProduct: product.UIDProduct,
-      amountrecord: product.Amount,
-      amountfact:
-        product.amountfact || String(summa(product.amountfact)) === String(0)
-          ? summa(product.amountfact)
-          : product.Amount,
-    })),
+    Products: products
+      .filter(
+        (product) =>
+          product.amountfact || String(summa(product.amountfact)) === String(0),
+      )
+      .map((product) => ({
+        UIDProduct: product.UIDProduct,
+        amountrecord: product.Amount,
+        amountfact: summa(product.amountfact),
+      })),
   };
-  api('lastinventorydone', 'POST', token, body)
+
+  api(
+    UIDInventory ? 'changeinventory' : 'lastinventorydone',
+    'POST',
+    token,
+    body,
+  )
     .then(() => {
       dispatch(setLoaderAC(false));
       ToastAndroid.show('✔️', ToastAndroid.SHORT);
@@ -146,9 +214,10 @@ export const changeInventory = () => (dispatch, getState) => {
   dispatch(setLoaderAC(true));
   const {token, UIDStructure} = getState().UserState;
   const {UIDInventory, products} = getState().RemainderState;
+  const {date} = getState().mainState;
 
   const body = {
-    date: getDate(),
+    date: getDate(date),
     UIDInventory: null,
     UIDStructure,
     Products: products.map((product) => ({
@@ -171,17 +240,43 @@ export const changeInventory = () => (dispatch, getState) => {
     });
 };
 
+export const addInventory = ({UIDProduct, Amount}) => (dispatch, getState) => {
+  const {token, UIDStructure} = getState().UserState;
+  const {UIDInventory} = getState().RemainderState;
+  const body = {
+    UIDStructure,
+    UIDInventory,
+    UIDProduct,
+    Amount,
+  };
+
+  api('inventoryadd', 'POST', token, body)
+    .then((res) => {
+      dispatch(
+        changeAmountAC({
+          UIDProduct,
+          amount: String(res.Разница || 0),
+          onAccount: String(res.ПоУчету || 0),
+        }),
+      );
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+};
+
 export const getInventoryUid = () => (dispatch, getState) => {
   const {token, UIDStructure} = getState().UserState;
   api(
-    `getinventoryuid?UIDStructure=${UIDStructure}&Type=passOff&date=${getDate()}`,
-    'GET',
+    //    `inventory?UIDStructure=${UIDStructure}&Type=passOff&date=${getDate()}`,
+    'inventory',
+    //'GET',
+    'POST',
     token,
+    {UIDStructure},
   )
     .then((res) => {
       dispatch(setInventoryUidAC(res));
-      dispatch(lastInventoryDone(res));
-      dispatch(setLoaderAC(false));
     })
     .catch((e) => {
       dispatch(setLoaderAC(false));

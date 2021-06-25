@@ -67,7 +67,7 @@ export default (props) => {
           {
             height:
               Dimensions.get('window').height -
-              (main.showMenu ? 390 : 360) * main.size,
+              (main.showMenu ? 360 : 330) * main.size,
           },
         ]}>
         <View style={style.inputOutputDoneContainer}>
@@ -78,6 +78,7 @@ export default (props) => {
               </Text>
             </View>
             <View style={style.outputContainer}>
+              <View style={{flexDirection: 'row'}}>
               <TouchableOpacity
                 style={style.closeIcon}
                 onPress={() => {
@@ -88,6 +89,16 @@ export default (props) => {
                   source={require('../assets/icons/reset.png')}
                 />
               </TouchableOpacity>
+              <TouchableOpacity
+            style={[gStyle.shadow, style.remove]}
+            onPress={() => {
+              if (state.calcVar.slice(-2, -1) === '+')
+                dispatch(setCalcVarAC(state.calcVar.slice(0, -2)));
+              else dispatch(setCalcVarAC(state.calcVar.slice(0, -1)));
+            }}>
+            <Text style={style.removeText}> C </Text>
+          </TouchableOpacity>
+              </View>
               <Text style={style.sum}>
                 {state.calcVar ? '= ' + summa(state.calcVar) : 0}
               </Text>
@@ -110,7 +121,11 @@ export default (props) => {
                       text: 'Нет, продолжить',
                       onPress: () => {
                         dispatch(setCalcVarAC(''));
-                        props.done(state.calcVar);
+                        props.done(
+                          state.calcVar,
+                          '',
+                          props.state.product.UIDProduct,
+                        );
                       },
                       style: 'cancel',
                     },
@@ -156,15 +171,7 @@ export default (props) => {
               ))}
             </View>
           ))}
-          <TouchableOpacity
-            style={[gStyle.shadow, style.remove]}
-            onPress={() => {
-              if (state.calcVar.slice(-2, -1) === '+')
-                dispatch(setCalcVarAC(state.calcVar.slice(0, -2)));
-              else dispatch(setCalcVarAC(state.calcVar.slice(0, -1)));
-            }}>
-            <Text style={style.removeText}> C </Text>
-          </TouchableOpacity>
+          
         </View>
       </View>
     </View>
@@ -197,8 +204,8 @@ const styles = (size) =>
     },
     inputOutputContainer: {
       justifyContent: 'space-between',
-      height: Dimensions.get('window').height - 570 * size,
-      width: 746 * size,
+      height: Dimensions.get('window').height - 550 * size,
+      width: 700 * size,
       marginBottom: 35 * size,
     },
     inputContainer: {
@@ -245,15 +252,15 @@ const styles = (size) =>
       backgroundColor: 'white',
     },
     keyboard: {
-      width: 515 * size,
-      height: Dimensions.get('window').height - 470 * size,
+      width: 580 * size,
+      height: Dimensions.get('window').height - 360 * size,
     },
     lineNums: {
       flexDirection: 'row',
     },
     numButton: {
-      width: 161 * size,
-      height: (Dimensions.get('window').height - 615 * size) / 4,
+      width: 178 * size,
+      height: (Dimensions.get('window').height - 470 * size) / 4,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 15 * size,
@@ -264,13 +271,13 @@ const styles = (size) =>
       fontSize: 35 * size,
     },
     remove: {
-      width: '100%',
-      height: 90 * size,
-      marginTop: 20 * size,
+      width: 54 * size,
+      height: 54 * size,
       alignItems: 'center',
       justifyContent: 'center',
       borderColor: 'red',
       borderWidth: 1,
+      marginLeft: 30*size,
     },
     removeText: {
       fontWeight: 'bold',
