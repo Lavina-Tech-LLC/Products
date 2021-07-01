@@ -117,6 +117,7 @@ export default React.memo(() => {
   const header = useMemo(() => [
     {text: 'Название', style: 'name'},
     {text: 'Ср. расход в день', style: 'average'},
+    {text: 'Вместимость', style: 'inputText'}, 
     {text: 'Остаток', style: 'inputText'}, 
     {text: 'Норма', style: 'inputText'},
     {text: 'Нужные', style: 'inputText'},
@@ -236,7 +237,7 @@ export default React.memo(() => {
             )}
           </TouchableOpacity>
           {header.map((item, index) => (
-            <View key={index} style={[style[item.style], style.item]}>
+            <View key={index} style={[style[item.style], style.item,{justifyContent: 'center',}]}>
               <Text style={style.headText}>{item.text}</Text>
             </View>
           ))}
@@ -340,21 +341,26 @@ const ListItem = React.memo(
             />
           </TouchableOpacity>
         </View>
-        <View style={[style.shadow, style.name, style.item]}>
+        <View style={[style.shadow, style.name, style.item,{justifyContent: 'center',}]}>
           <Text numberOfLines={1} style={style.text}>
             {item.Name}
           </Text>
         </View>
-        <View style={[style.shadow, style.Average, style.item]}>
+        <View style={[style.shadow, style.item , style.Average]}>
           <Text style={style.iconText}>☰</Text>
           <Text
             numberOfLines={1}
             style={{
               marginLeft: 10 * order.size,
-              width: 200 * order.size,
               fontSize: 28 * order.size,
             }}>
             {item.Average ? String(item.Average) : '0.00'}
+          </Text>
+        </View>
+        <View style={[style.shadow, style.inputText, style.item]}>
+          <Text style={style.iconText}>☰</Text>
+          <Text style={style.textInput}>
+            {item.Capacity !== null ? String(item.Capacity) : '0'}
           </Text>
         </View>
         <View style={[style.shadow, style.inputText, style.item]}>

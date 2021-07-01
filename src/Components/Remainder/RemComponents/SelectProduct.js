@@ -44,6 +44,7 @@ export default React.memo(() => {
       dispatch(fetchRemainders());
     }
   }, []);
+  
   return (
     <>
       <ScrollView
@@ -105,7 +106,7 @@ export default React.memo(() => {
               )
               .map((item, index) => (
                 <Card
-                  key={index}
+                  key={String(item.CurrentAmount)+String(item.difference)+item.UIDProduct}
                   index={index}
                   item={item}
                   onClickCard={() => {
@@ -113,8 +114,8 @@ export default React.memo(() => {
                     dispatch(setProductAC(item));
                   }}
                   color={
-                    summa(item.amountfact)
-                      ? summa(item.amountfact) === item.Amount
+                    (item.difference)
+                      ? String(item.difference) === '0'
                         ? '#d7fab9'
                         : '#fab9bb'
                       : ''
@@ -153,8 +154,8 @@ export default React.memo(() => {
           state={state}
           done={(amount, index, UIDProduct) => {
             if (state.type === 'Принять')
-              dispatch(changeAmountAC({UIDProduct, amount}));
-            else dispatch(addInventory({UIDProduct, Amount: amount}));
+              dispatch(changeAmountAC({UIDProduct, Amount: amount}));
+            else if(state.type === 'Сдать') dispatch(addInventory({UIDProduct, Amount: amount}));
             dispatch(setProductAC(''));
             setTimeout(() => {
               if (scrollRef?.current) scrollRef.current.scrollTo({y: position});

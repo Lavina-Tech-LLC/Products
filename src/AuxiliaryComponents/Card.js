@@ -1,10 +1,16 @@
 import React from 'react';
+import { useCallback } from 'react';
 import {Text, TouchableOpacity, StyleSheet, View} from 'react-native';
 import GlobalStyles from '../styles/GlobalStyles';
 import {summa} from '../Utils/helpers';
 
-export default React.memo(
-  ({item, star, state, index, onClickCard, color, size, otherStyle}) => {
+export default (props)=>{
+  const CC = useCallback(()=><Card {...props}/>,[String(props.item.CurrentAmount)])
+  return <CC/>
+}
+
+
+export const Card = ({item, star, state, index, onClickCard, color, size, otherStyle}) => {
     const style = styles(state.size);
     const gStyle = GlobalStyles(state.size);
     return (
@@ -34,13 +40,13 @@ export default React.memo(
           <Text style={style.icon}>☰</Text>
           <Text style={style.iconText}>{item.Amount}</Text>
         </View>
-        {state.invoice?.done || item.amountfact ? (
+        {state.invoice?.done || item.CurrentAmount ? (
           <View style={style.Barcode}>
             <Text style={style.icon}>✓</Text>
             <Text style={style.iconText}>
               {!state.invoice?.done
-                ? item.amountfact
-                  ? summa(item.amountfact)
+                ? String(item.CurrentAmount)
+                  ? String(item.CurrentAmount)
                   : ''
                 : item.AmountDone}
             </Text>
@@ -48,6 +54,13 @@ export default React.memo(
         ) : (
           <View />
         )}
+        {item.difference?
+          <View style={style.Barcode}>
+          <Text style={[style.icon, {fontSize: 40 * state.size}]}>±</Text>
+          <Text style={style.iconText}>
+            {item.difference}
+          </Text>
+        </View>:<View/>}
         <View style={style.Barcode}>
           <Text style={[style.icon, {fontSize: 15 * state.size}]}>║▌║</Text>
           <Text style={style.iconText}>
@@ -56,9 +69,7 @@ export default React.memo(
         </View>
       </TouchableOpacity>
     );
-  },
-);
-
+  }
 const styles = (size) =>
   StyleSheet.create({
     product: {

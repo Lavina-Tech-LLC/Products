@@ -112,16 +112,23 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
             </TouchableOpacity>
           </View>
           <View style={style.searchContainer}>
-            <View style={[styles(order.size).barCode, {marginBottom: marginB}]}>
+            <View style={[styles(order.size).barCode, ]}>
               <TextInput
-                keyboardType="numeric"
                 value={String(state.search)}
                 onChangeText={(text) => dispatch(setSearchAC(text))}
                 disableFullscreenUI={true}
-                placeholder="Штрих код"
+                placeholder="Search"
                 editable
                 style={styles(order.size).input}
               />
+              <View style={{flexDirection: 'row',alignItems: 'center',}}>
+              {state.search ?
+                <TouchableOpacity
+                onPress={() => dispatch(setSearchAC(''))}
+                style={{marginRight: 10*state.size,}}>
+                <Text>x</Text>
+              </TouchableOpacity>
+            : <View/> }
               <TouchableOpacity
                 onPress={() => dispatch(setScanerAC(true))}
                 style={styles(order.size).barCodeButton}>
@@ -132,6 +139,7 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
                     height: 25 * order.size,
                   }}></Image>
               </TouchableOpacity>
+              </View>
             </View>
           </View>
           {/* cards */}
@@ -141,7 +149,7 @@ export default React.memo(({args: {modalVisible, setModalVisible}}) => {
               extraData={rendering}
               numColumns={3}
               keyExtractor={keyExtractor}
-              data={state.products.sort((a) => {
+              data={state.products.filter(item=>String(item.Barсode || item.Barсode === 0 ? item.Barсode : item.Barcode).toLowerCase().includes(state.search.toLowerCase()) || item.Name.toLowerCase().includes(state.search.toLowerCase()) ).sort((a) => {
                 const isOnList = orderList.find((item2) => {
                   return item2?.Name === a.Name;
                 });

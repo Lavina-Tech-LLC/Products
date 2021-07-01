@@ -41,27 +41,54 @@ import {
   setListDoneInvoiceAC,
   setListInvoiceAC,
   setInvoiceAC,
+  setCurrentAmountAC,
 } from './src/Redux/ComingReducer';
 import {dateToString} from './src/Utils/helpers';
 import Nomenclatures from './src/Components/Nomenclatures/Nomenclatures';
+import api from './src/API/api';
+import io  from "socket.io-client";
 
 const App = () => {
   const [category, setCategory] = useState(<WriteOff />);
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [socketId, setSocketId] = useState('');
 
   const state = useSelector((state) => state.mainState);
-  const {UIDStructure, structures, isBoss} = useSelector(
+  const comingState = useSelector((state) => state.ComingState);
+  const {UIDStructure,token, structures, isBoss} = useSelector(
     (state) => state.UserState,
   );
   const dispatch = useDispatch();
   const style = styles(state.size);
+
   useEffect(() => {
     SplashScreen.hide();
+    const socket = io('http://srv3.lavina.uz:8080');
+
+    socket.on('registerUser', (data) => setSocketId(data));
+
+    socket.on('setCurrentAmount', (data) => {
+      console.log(data)
+      dispatch(setCurrentAmountAC(data))
+    });
+
     return () => {
+      socket.disconnect();
       dispatch(setUidAC(''));
     };
   }, []);
+
+
+  useEffect(() => {
+console.log(socketId);
+        if(socketId && token) api('setToken','POST',token, { token: socketId }).then(r=>{
+          console.log(r)
+          
+        }).catch(e=>console.log(e))
+  }, [socketId,token]);
+
+
 
   useEffect(() => {
     switch (state.category) {

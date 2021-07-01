@@ -12,11 +12,14 @@ import {
 } from 'react-native';
 import {RNCamera} from 'react-native-camera';
 import {useDispatch, useSelector} from 'react-redux';
-import {setSearchComingAC} from '../Redux/ComingReducer';
+import {setProductAC, setSearchComingAC} from '../Redux/ComingReducer';
 import {setScanerAC, setSearchAC, updateWriteOffAC} from '../Redux/MainReducer';
+import { setProductAC as setProductForRem } from '../Redux/RemainderReducer';
 
-export default () => {
+export default (props) => {
   const state = useSelector((state) => state.mainState);
+  const coming = useSelector((state) => state.ComingState);
+  const rem = useSelector((state) => state.RemainderState);
   const dispatch = useDispatch();
   const [torch, setTorch] = useState(false);
 
@@ -24,12 +27,29 @@ export default () => {
     try {
       switch (state.category) {
         case 'Остаток':
+          {
+            const product = rem.products.find((item) =>
+            String(
+              item.Barсode || item.Barсode === 0
+                ? item.Barсode
+                : item.Barcode,
+            ) === String(data)
+          )
+          if(product){
+                dispatch(setProductsAC(product));
+          }else
           dispatch(setSearchAC(Number(data)));
-          break;
-        case 'Приход':
+          break;}
+        case 'Приход':{
+          const product = coming.products.find((item) =>
+          String(item.Barcode) === String(data)
+        )
+        if(!coming.invoice.done && product){
+              dispatch(setProductForRem(product));
+        }else
           dispatch(setSearchComingAC(Number(data)));
           break;
-
+}
         case 'Списание':
           dispatch(
             updateWriteOffAC({

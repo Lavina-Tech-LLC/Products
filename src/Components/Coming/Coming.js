@@ -14,10 +14,12 @@ import {useDispatch, useSelector} from 'react-redux';
 import {setScanerAC} from '../../Redux/MainReducer';
 import {
   changeAmountAC,
+  changeAmountWithSocketAC,
   getListDoneInvoice,
   getProducts,
   invoice,
   removeInvoiceAC,
+  sendCurrentAmount,
   setInvoiceAC,
   setInvoiceProductsAC,
   setIsChangeAC,
@@ -47,11 +49,23 @@ export default React.memo(() => {
     dispatch(getListDoneInvoice(''));
     dispatch(getListDoneInvoice('done'));
   }, []);
+  useEffect(() => {
+    console.log(state.currentAmount.UIDInvoice === state.invoice.UIDInvoice);
+    console.log( state.invoice.UIDInvoice);
+    console.log(state.currentAmount.UIDInvoice );
+    if(state.currentAmount.UIDInvoice === state.invoice.UIDInvoice)
+    dispatch(changeAmountWithSocketAC(state.currentAmount))
+  }, [state.currentAmount]);
 
   return state.product ? (
     <Calculator
       state={state}
       done={(amount) => {
+        dispatch(sendCurrentAmount({
+          UIDInvoice:state.invoice.UIDInvoice,
+          UIDProduct:state.product.UIDProduct,
+          CurrentAmount: String(summa(amount))
+        }))
         dispatch(changeAmountAC(amount));
         dispatch(setProductAC(''));
         setTimeout(() => {
@@ -131,39 +145,39 @@ export default React.memo(() => {
           <InvoiceCard
             state={state}
             onClick={(uid) => {
-              if (state.products.length > 0 && state.isChange)
-                Alert.alert('', ' вы хотите сохранить изменения', [
-                  {
-                    text: 'Нет',
-                    onPress: () => {
-                      dispatch(getProducts('listInvoice', uid));
-                      dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
-                      if (scrollRef?.current)
-                        scrollRef.current.scrollTo({y: 0});
-                    },
-                    style: 'cancel',
-                  },
-                  {
-                    text: 'Да ',
-                    onPress: () => {
-                      dispatch(
-                        setInvoiceProductsAC({
-                          id: state.invoice.UIDInvoice,
-                          type: '',
-                        }),
-                      );
-                      dispatch(getProducts('listInvoice', uid));
-                      dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
-                      if (scrollRef?.current)
-                        scrollRef.current.scrollTo({y: 0});
-                    },
-                  },
-                ])
-              else {
+              // if (state.products.length > 0 && state.isChange)
+              //   Alert.alert('', ' вы хотите сохранить изменения', [
+              //     {
+              //       text: 'Нет',
+              //       onPress: () => {
+              //         dispatch(getProducts('listInvoice', uid));
+              //         dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
+              //         if (scrollRef?.current)
+              //           scrollRef.current.scrollTo({y: 0});
+              //       },
+              //       style: 'cancel',
+              //     },
+              //     {
+              //       text: 'Да ',
+              //       onPress: () => {
+              //         dispatch(
+              //           setInvoiceProductsAC({
+              //             id: state.invoice.UIDInvoice,
+              //             type: '',
+              //           }),
+              //         );
+              //         dispatch(getProducts('listInvoice', uid));
+              //         dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
+              //         if (scrollRef?.current)
+              //           scrollRef.current.scrollTo({y: 0});
+              //       },
+              //     },
+              //   ])
+              // else {
                 dispatch(getProducts('listInvoice', uid));
                 dispatch(setInvoiceAC({done: false, UIDInvoice: uid}));
                 if (scrollRef?.current) scrollRef.current.scrollTo({y: 0});
-              }
+              //}
               dispatch(setIsChangeAC(false));
             }}
             size={state.size}
@@ -194,8 +208,8 @@ export default React.memo(() => {
                     index={index}
                     item={item}
                     color={
-                      item.amountfact || String(summa(item.amountfact)) === '0'
-                        ? summa(item.amountfact) === item.Amount
+                      String(item.CurrentAmount)
+                        ? String(item.CurrentAmount) === String(item.Amount)
                           ? '#d7fab9'
                           : '#fab9bb'
                         : 'rgba(248, 248, 252, 1)'
@@ -228,7 +242,7 @@ export default React.memo(() => {
                     onPress={() => {
                       if (
                         !state.products.find(
-                          (product) => product.amountfact === undefined,
+                          (product) =>!Boolean(product.CurrentAmount),
                         )
                       ) {
                         dispatch(invoice());

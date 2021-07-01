@@ -42,8 +42,8 @@ export const sortCard = (list) => {
       }
     })
     .forEach((item) => {
-      if (item.amountfact) {
-        if (summa(item.amountfact) === item.Amount) n3.push(item);
+      if (item.CurrentAmount) {
+        if ((item.CurrentAmount) === item.Amount) n3.push(item);
         else n2.push(item);
       } else n1.push(item);
     });

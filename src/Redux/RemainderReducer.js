@@ -51,7 +51,8 @@ export default (state = initialState, action) => {
     case CHANGE_AMOUNT:
       const prd = state.products.map((p) => {
         if (p.UIDProduct === action.payload.UIDProduct) {
-          p.amountfact = action.payload.amount;
+          p.difference = action.payload.difference;
+          p.CurrentAmount =  action.payload.Amount
           if (
             action.payload.onAccount ||
             String(action.payload.onAccount) === '0'
@@ -185,12 +186,12 @@ export const lastInventoryDone = (inventoryID) => (dispatch, getState) => {
     Products: products
       .filter(
         (product) =>
-          product.amountfact || String(summa(product.amountfact)) === String(0),
+          product.CurrentAmount || String(product.CurrentAmount) === String(0),
       )
       .map((product) => ({
         UIDProduct: product.UIDProduct,
         amountrecord: product.Amount,
-        amountfact: summa(product.amountfact),
+        amountfact: product.CurrentAmount,
       })),
   };
 
@@ -223,10 +224,7 @@ export const changeInventory = () => (dispatch, getState) => {
     Products: products.map((product) => ({
       UIDProduct: product.UIDProduct,
       amountrecord: product.Amount,
-      amountfact:
-        product.amountfact || String(summa(product.amountfact)) === String(0)
-          ? summa(product.amountfact)
-          : product.Amount,
+      amountfact: product.CurrentAmount
     })),
   };
 
@@ -255,8 +253,9 @@ export const addInventory = ({UIDProduct, Amount}) => (dispatch, getState) => {
       dispatch(
         changeAmountAC({
           UIDProduct,
-          amount: String(res.Разница || 0),
+          difference: String(res.Разница || 0),
           onAccount: String(res.ПоУчету || 0),
+          Amount
         }),
       );
     })

@@ -19,10 +19,10 @@ export default (props) => {
   const gStyle = GlobalStyles(state.size);
   const style = styles(state.size);
   React.useEffect(() => {
-    if (props.state.product.amountfact)
-      dispatch(setCalcVarAC(props.state.product.amountfact));
+    if (props.state.product.CurrentAmount)
+      dispatch(setCalcVarAC(props.state.product.CurrentAmount));
     return () => dispatch(setCalcVarAC(''));
-  }, [props.state.product.amountfact]);
+  }, [props.state.product.CurrentAmount]);
   const calcNumbers = [
     ['1', '2', '3'],
     ['4', '5', '6'],
@@ -110,7 +110,11 @@ export default (props) => {
                 String(summa(state.calcVar)) ===
                 String(props.state.product?.Amount)
               ) {
-                props.done(state.calcVar);
+                props.done(
+                  summa(state.calcVar),
+                  '',
+                  props.state.product.UIDProduct,
+                );
                 dispatch(setCalcVarAC(''));
               } else {
                 Alert.alert(
@@ -120,12 +124,13 @@ export default (props) => {
                     {
                       text: 'Нет, продолжить',
                       onPress: () => {
-                        dispatch(setCalcVarAC(''));
+                        
                         props.done(
-                          state.calcVar,
+                          summa(state.calcVar),
                           '',
                           props.state.product.UIDProduct,
                         );
+                        dispatch(setCalcVarAC(''));
                       },
                       style: 'cancel',
                     },

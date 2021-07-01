@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
 
 export const styles = (size) =>
   StyleSheet.create({
@@ -72,7 +72,7 @@ export const styles = (size) =>
       fontSize: 22 * size,
     },
     textInput: {
-      height: 50 * size,
+
       padding: 0,
       textAlign: 'center',
       fontSize: 28 * size,
@@ -87,12 +87,13 @@ export const styles = (size) =>
     },
     item: {
       flexDirection: 'row',
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       alignItems: 'center',
       height: 60 * size,
     },
     Average: {
-      width: 220 * size,
+      width: 180 * size,
+      justifyContent: 'flex-start',
     },
 
     // footer
@@ -120,6 +121,7 @@ export const modalStyles = (size) =>
   StyleSheet.create({
     container: {
       flex: 1,
+      minHeight:Dimensions.get('window').height-70*size,
       alignItems: 'center',
       justifyContent: 'center',
     },

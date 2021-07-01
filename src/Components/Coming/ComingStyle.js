@@ -52,7 +52,7 @@ export const styles = (size) =>
       width: 60 * size,
       height: 60 * size,
       position: 'relative',
-      top: -3.5 * size,
+      top: 1 * size,
       right: -4 * size,
       justifyContent: 'center',
       alignItems: 'center',

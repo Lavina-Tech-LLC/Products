@@ -27,7 +27,7 @@ export const summa = (val) => {
     ? null
     : val[0] === '-'
     ? val
-    : val.split('+').reduce((a, b) => Number(a) + Number(b), 0);
+    : String(val).split('+').reduce((a, b) => Number(a) + Number(b), 0);
 };
 
 export const dateToString = (date) => {

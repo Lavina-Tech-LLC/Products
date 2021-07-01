@@ -10,6 +10,8 @@ const SET_LOADER = 'ComingReducer/SET_LOADER';
 const SET_INVOICE = 'ComingReducer/SET_INVOICE';
 const SET_PRODUCT = 'ComingReducer/SET_PRODUCT';
 const CHANGE_AMOUNT = 'ComingReducer/CHANGE_AMOUNT';
+const SET_CURRENT_AMOUNT = 'ComingReducer/SET_CURRENT_AMOUNT';
+const CHANGE_AMOUNT_WITH_SOCKET = 'ComingReducer/CHANGE_AMOUNT_WITH_SOCKET';
 const REMOVE_IN_LIST_INVOICE = 'ComingReducer/REMOVE_IN_LIST_INVOICE';
 
 // <<<<<< IMPORTS >>>>>>
@@ -28,6 +30,7 @@ const initialState = {
   listInvoice: [],
   listDoneInvoice: [],
   invoice: {},
+  currentAmount: {},
 };
 
 // <<<<<< REDUCER >>>>>>
@@ -35,6 +38,8 @@ export default (state = initialState, action) => {
   switch (action.type) {
     case SET_SEARCH:
       return {...state, search: action.payload};
+    case SET_CURRENT_AMOUNT:
+      return {...state, currentAmount: action.payload};
     case SET_CHANGE:
       return {...state, isChange: action.payload};
     case SET_PRODUCTS:
@@ -48,14 +53,22 @@ export default (state = initialState, action) => {
           : [];
       return {...state, listDoneInvoice: newList};
     }
-    case CHANGE_AMOUNT:
+    case CHANGE_AMOUNT:{
       const prd = state.products.map((p) => {
         if (state.product && p.UIDProduct === state.product.UIDProduct) {
-          p.amountfact = action.payload;
+          p.CurrentAmount = action.payload;
         }
         return p;
       });
-      return {...state, isChange: true, products: prd};
+      return {...state, isChange: true, products: prd};}
+    case CHANGE_AMOUNT_WITH_SOCKET:
+       { const prd = state.products.map((p) => {
+          if ( p.UIDProduct === action.payload.UIDProduct) {
+            p.CurrentAmount =  action.payload.CurrentAmount
+          }
+          return p;
+        });
+        return {...state, isChange: true, products: prd};}
     case SET_LIST_INVOICE: {
       const newList =
         action.payload.length > 0
@@ -101,6 +114,8 @@ export default (state = initialState, action) => {
 
 // <<<<<< ACTION CREATOR >>>>>>
 export const setIsChangeAC = (payload) => ({type: SET_CHANGE, payload});
+export const setCurrentAmountAC = (payload) => ({type: SET_CURRENT_AMOUNT, payload});
+export const changeAmountWithSocketAC = (payload) => ({type: CHANGE_AMOUNT_WITH_SOCKET, payload});
 export const removeInvoiceAC = (payload) => ({type: REMOVE_IN_LIST_INVOICE, payload});
 export const setSearchComingAC = (payload) => ({type: SET_SEARCH, payload});
 export const setProductsAC = (payload) => ({type: SET_PRODUCTS, payload});
@@ -156,9 +171,7 @@ export const getProducts = (type, uid) => (dispatch, getState) => {
   const {token, UIDStructure} = getState().UserState;
   const list = getState().ComingState[type];
   const invoice = list.find((item) => item?.invoice.UIDInvoice === uid);
-  invoice?.products.length > 0
-    ? dispatch(setProductsAC(invoice.products))
-    : api(`invoiceinfo/${uid}`, 'GET', token)
+  api(`invoiceinfo/${uid}`, 'GET', token)
         .then((res) => {
           dispatch(setProductsAC(res));
         })
@@ -190,10 +203,10 @@ export const invoice = (type, uid) => (dispatch, getState) => {
     UIDInvoice: invoice.UIDInvoice,
     Products: products.map((product) => ({
       UIDProduct: product.UIDProduct,
-      Amount:
-        product.amountfact || String(summa(product.amountfact)) === String(0)
-          ? summa(product.amountfact)
-          : product.Amount,
+      Amount: Number(product.CurrentAmount || 0)
+        // product.amountfact || String(summa(product.amountfact)) === String(0)
+        //   ? summa(product.amountfact)
+        //   : product.Amount,
     })),
   };
   api('invoice', 'POST', token, body)
@@ -205,6 +218,20 @@ export const invoice = (type, uid) => (dispatch, getState) => {
     })
     .catch((e) => {
       dispatch(setLoaderAC(false));
+      console.log(e);
+    });
+};
+
+
+
+export const sendCurrentAmount = (body) => (dispatch, getState) => {
+  const {token} = getState().UserState;
+  console.log(body);
+  api('/setCurrentAmount', 'POST', token,body)
+    .then(() => {
+     
+    })
+    .catch((e) => {
       console.log(e);
     });
 };
