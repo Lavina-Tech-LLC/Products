@@ -36,7 +36,7 @@ export default (props) => {
             ) === String(data)
           )
           if(product){
-                dispatch(setProductsAC(product));
+                dispatch(setProductForRem(product));
           }else
           dispatch(setSearchAC(Number(data)));
           break;}
@@ -45,7 +45,7 @@ export default (props) => {
           String(item.Barcode) === String(data)
         )
         if(!coming.invoice.done && product){
-              dispatch(setProductForRem(product));
+              dispatch(setProductAC(product));
         }else
           dispatch(setSearchComingAC(Number(data)));
           break;

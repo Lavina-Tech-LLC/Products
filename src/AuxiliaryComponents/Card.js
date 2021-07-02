@@ -1,16 +1,9 @@
 import React from 'react';
-import { useCallback } from 'react';
 import {Text, TouchableOpacity, StyleSheet, View} from 'react-native';
 import GlobalStyles from '../styles/GlobalStyles';
 import {summa} from '../Utils/helpers';
 
-export default (props)=>{
-  const CC = useCallback(()=><Card {...props}/>,[String(props.item.CurrentAmount)])
-  return <CC/>
-}
-
-
-export const Card = ({item, star, state, index, onClickCard, color, size, otherStyle}) => {
+export default ({item, star, state, index, onClickCard, color, size, otherStyle}) => {
     const style = styles(state.size);
     const gStyle = GlobalStyles(state.size);
     return (
