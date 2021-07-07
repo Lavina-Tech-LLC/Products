@@ -56,47 +56,51 @@ export const styles = (size) =>
 
     //Название
     name: {
-      width: 206 * size,
+      width: 200 * size,
     },
 
     //Начало ост
     startRem: {
-      width: 110 * size,
+      width: 104 * size,
     },
 
     // Приход
     coming: {
-      width: 110 * size,
+      width: 104 * size,
     },
 
     // Продажа
     sale: {
-      width: 110 * size,
+      width: 104 * size,
     },
 
     // списать
     writeOff: {
-      width: 110 * size,
+      width: 104 * size,
     },
 
     // Остаток
     remainder: {
-      width: 110 * size,
+      width: 104 * size,
+    },
+    //Прочие
+    others: {
+      width: 104 * size,
     },
 
     // Разница
     difference: {
-      width: 110 * size,
+      width: 104 * size,
     },
 
     // Цена
     price: {
-      width: 150 * size,
+      width: 140 * size,
     },
 
     // Сумма
     amount: {
-      width: 150 * size,
+      width: 140 * size,
     },
 
     // footer

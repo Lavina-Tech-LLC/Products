@@ -1,5 +1,5 @@
 import api from '../API/api';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // TYPES
 const SET_UID = 'USER/SET_UID';
 const SET_TOKEN = 'USER/SET_TOKEN';
@@ -41,7 +41,7 @@ export const setIsBossAC = (payload) => ({type: SET_IS_BOSS, payload});
 export const getOption = (token) => (dispatch, getState) => {
   //const token = getState().UserState.token;
   api('1/getoptions', 'GET', token)
-    .then((res) => {
+    .then(async(res) => {
       if (res?.СтрутурныеЕдиницы.length > 1) {
         dispatch(setStructureAC(res.СтрутурныеЕдиницы));
       } else {
@@ -49,6 +49,11 @@ export const getOption = (token) => (dispatch, getState) => {
           dispatch(setUidAC(res.СтрутурныеЕдиницы[0].Уид));
           dispatch(setStructureAC(res.СтрутурныеЕдиницы));
         }
+      }
+      try {
+        await AsyncStorage.setItem('@token', token)
+      } catch (e) {
+        console.log(e);
       }
       dispatch(setIsBossAC(res.ЭтоБосс));
     })

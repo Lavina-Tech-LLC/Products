@@ -50,6 +50,7 @@ export default React.memo(() => {
     {text: 'Продажа', style: 'sale'},
     {text: 'Списание', style: 'writeOff'},
     {text: 'Остаток', style: 'remainder'},
+    {text: 'Прочие', style: 'others'},
     {text: 'Разница', style: 'difference'},
     {text: 'Цена', style: 'price'},
     {text: 'Сумма', style: 'amount'},

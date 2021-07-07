@@ -19,6 +19,7 @@ import {
   fetchRemainders,
   getInventoryUid,
   getProducts,
+  inventoryDone,
   lastInventoryDone,
   setInventoryUidAC,
   setProductAC,
@@ -39,9 +40,10 @@ export default React.memo(() => {
   const [y, setY] = useState(0);
   const [position, setPosition] = useState(0);
   const scrollRef = useRef(0);
+ 
   useEffect(() => {
     if (state.products.length < 1) {
-      dispatch(fetchRemainders());
+      dispatch(getInventoryUid());
     }
   }, []);
   
@@ -60,11 +62,10 @@ export default React.memo(() => {
         <View style={style.productCreatorContaier}>
           <View style={[style.barCode]}>
             <TextInput
-              keyboardType="numeric"
               value={String(search)}
               onChangeText={(text) => dispatch(setSearchAC(text))}
               disableFullscreenUI={true}
-              placeholder="Штрих код"
+              placeholder="Search..."
               editable
               style={style.input}
             />
@@ -98,11 +99,7 @@ export default React.memo(() => {
           <View style={style.productsContainer}>
             {state.products
               .filter((item) =>
-                String(
-                  item.Barсode || item.Barсode === 0
-                    ? item.Barсode
-                    : item.Barcode,
-                ).includes(String(search)),
+                String(item.Barcode).includes(String(search)) || String(item.Name).toLowerCase().includes(String(search).toLowerCase())
               )
               .map((item, index) => (
                 <Card
@@ -128,7 +125,8 @@ export default React.memo(() => {
         <TouchableOpacity
           onPress={() => {
             //state.type === 'Принять' && dispatch(changeInventory());
-            if (state.type === 'Принять') dispatch(lastInventoryDone());
+            // if (state.type === 'Принять') dispatch(lastInventoryDone());
+            if(state.products.length > 0) dispatch(inventoryDone());
             dispatch(setProductsAC([]));
             dispatch(setInventoryUidAC(null));
             dispatch(setTypeAC(''));
@@ -145,7 +143,7 @@ export default React.memo(() => {
             margin: 30 * state.size,
           }}>
           <Text style={{fontWeight: 'bold', fontSize: 35 * state.size}}>
-            {state.type === 'Принять' ? 'Отправить' : 'Закрыть '}
+          Отправить
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -153,10 +151,13 @@ export default React.memo(() => {
         <Calculator
           state={state}
           done={(amount, index, UIDProduct) => {
-            if (state.type === 'Принять')
-              dispatch(changeAmountAC({UIDProduct, Amount: amount}));
-            else if(state.type === 'Сдать') dispatch(addInventory({UIDProduct, Amount: amount}));
+            dispatch(changeAmountAC({
+              UIDProduct,
+              difference: amount - state.product.Amount ,
+              Amount:amount
+            }))
             dispatch(setProductAC(''));
+
             setTimeout(() => {
               if (scrollRef?.current) scrollRef.current.scrollTo({y: position});
             }, 300);

@@ -69,7 +69,6 @@ const App = () => {
     socket.on('registerUser', (data) => setSocketId(data));
 
     socket.on('setCurrentAmount', (data) => {
-      console.log(data)
       dispatch(setCurrentAmountAC(data))
     });
 
@@ -83,7 +82,6 @@ const App = () => {
   useEffect(() => {
 console.log(socketId);
         if(socketId && token) api('setToken','POST',token, { token: socketId }).then(r=>{
-          console.log(r)
           
         }).catch(e=>console.log(e))
   }, [socketId,token]);

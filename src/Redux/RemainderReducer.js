@@ -265,20 +265,48 @@ export const addInventory = ({UIDProduct, Amount}) => (dispatch, getState) => {
 };
 
 export const getInventoryUid = () => (dispatch, getState) => {
+  dispatch(setLoaderAC(true));
+  const {type} = getState().RemainderState;
   const {token, UIDStructure} = getState().UserState;
+  const url = `inventory?type=${type==='Принять'?'accepted':'handover'}&UIDStructure=${UIDStructure}`
   api(
     //    `inventory?UIDStructure=${UIDStructure}&Type=passOff&date=${getDate()}`,
-    'inventory',
-    //'GET',
-    'POST',
+    url,
+    'GET',
+    // 'POST',
     token,
     {UIDStructure},
   )
     .then((res) => {
-      dispatch(setInventoryUidAC(res));
+      if(res.ok){
+        const products = res.result.products.map(product=>({
+          UIDProduct:product.UIDProduct,
+          Barcode: product.Barcode,
+          Name: product.Nomenclature,
+          Amount: product.QuantityRecorded,
+          CurrentAmount: product.ActualQuantity,
+          difference: product.Difference,
+        }))
+        dispatch(setInventoryUidAC(res.result.UIDInventory))
+        dispatch(setProductsAC(products))
+      dispatch(setLoaderAC(false));
+
+      }
     })
     .catch((e) => {
       dispatch(setLoaderAC(false));
       console.log(e);
     });
 };
+
+
+export const inventoryDone = () => (dispatch, getState) => {
+  const {UIDInventory, products} = getState().RemainderState;
+  const body = {
+    UIDInventory,
+    Products: products.map(product=>({
+      UIDProduct: product.UIDProduct,
+      Difference: product.difference
+    }))
+  }
+}

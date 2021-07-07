@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -12,6 +12,8 @@ import GlobalStyles from '../styles/GlobalStyles';
 import base64 from 'react-native-base64';
 import {getOption, setTokenAC} from '../Redux/UserReducer';
 import utf8 from 'utf8';
+import FingerprintScanner from 'react-native-fingerprint-scanner';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Structures from './Structures';
 
 export default () => {
@@ -26,6 +28,29 @@ export default () => {
   const size = state.size;
   const gStyle = GlobalStyles(size);
   const style = styles(size);
+
+
+  useEffect( () => {
+    
+      AsyncStorage.getItem('@token').then((value)=>{
+        if(value !== null) {
+        authCurrent(value)
+        }
+      })
+       return ()=>FingerprintScanner.release();
+  }, []);
+
+  const authCurrent = (value)=> {
+    if(user.structures.length>0)
+    FingerprintScanner
+      .authenticate({ title: 'Log in with Biometrics' })
+      .then(() =>{
+        dispatch(setTokenAC(value));
+        dispatch(getOption(value));
+      })
+      .catch(error => console.log(error.message))
+    }
+
 
   const Submit = () => {
     var bytes = utf8.encode(login + ':' + password);

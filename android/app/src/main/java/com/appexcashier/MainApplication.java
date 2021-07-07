@@ -14,6 +14,8 @@ import java.util.List;
 import org.reactnative.camera.RNCameraPackage;
 import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
+import com.hieuvp.fingerprint.ReactNativeFingerprintScannerPackage;
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 
 public class MainApplication extends Application implements ReactApplication {
 

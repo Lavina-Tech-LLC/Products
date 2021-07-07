@@ -47,7 +47,7 @@ export default ({item, star, state, index, onClickCard, color, size, otherStyle}
         ) : (
           <View />
         )}
-        {item.difference?
+        {item.difference || item.difference == 0?
           <View style={style.Barcode}>
           <Text style={[style.icon, {fontSize: 40 * state.size}]}>±</Text>
           <Text style={style.iconText}>

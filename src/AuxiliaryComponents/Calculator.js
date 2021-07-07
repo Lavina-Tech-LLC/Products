@@ -20,7 +20,7 @@ export default (props) => {
   const style = styles(state.size);
   React.useEffect(() => {
     if (props.state.product.CurrentAmount)
-      dispatch(setCalcVarAC(props.state.product.CurrentAmount));
+      dispatch(setCalcVarAC(String(Math.abs(props.state.product.CurrentAmount))));
     return () => dispatch(setCalcVarAC(''));
   }, [props.state.product.CurrentAmount]);
   const calcNumbers = [

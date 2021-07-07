@@ -226,7 +226,6 @@ export const invoice = (type, uid) => (dispatch, getState) => {
 
 export const sendCurrentAmount = (body) => (dispatch, getState) => {
   const {token} = getState().UserState;
-  console.log(body);
   api('/setCurrentAmount', 'POST', token,body)
     .then(() => {
      
