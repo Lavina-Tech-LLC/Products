@@ -302,6 +302,8 @@ export const getInventoryUid = () => (dispatch, getState) => {
 
 export const inventoryDone = () => (dispatch, getState) => {
   const {UIDInventory, products} = getState().RemainderState;
+  const {token} = getState().UserState;
+
   const body = {
     UIDInventory,
     Products: products.map(product=>({
@@ -309,4 +311,12 @@ export const inventoryDone = () => (dispatch, getState) => {
       Difference: product.difference
     }))
   }
+  api('inventorydone', 'POST', token, body).then((res)=>{
+    if(res.ok){
+      ToastAndroid.show('✔️', ToastAndroid.SHORT);
+    }
+  }).catch(e=>{
+    console.log(e);
+  })
+
 }

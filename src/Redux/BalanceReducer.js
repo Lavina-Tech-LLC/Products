@@ -98,6 +98,7 @@ export const getProducts = (func) => (dispatch, getState) => {
             sale: product.Продажа,
             writeOff: product.Списание,
             remainder: product.Остаток,
+            difAcc: product.РазницаПринята,
             others: product.Прочие,
             difference: product.Разница,
             price: product.Цена,

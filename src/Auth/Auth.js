@@ -41,7 +41,7 @@ export default () => {
   }, []);
 
   const authCurrent = (value)=> {
-    if(user.structures.length>0)
+    if(user.structures.length<1)
     FingerprintScanner
       .authenticate({ title: 'Log in with Biometrics' })
       .then(() =>{

@@ -51,56 +51,60 @@ export const styles = (size) =>
     },
     //Бар код
     barCode: {
-      width: 150 * size,
+      width: 145 * size,
     },
 
     //Название
     name: {
-      width: 200 * size,
+      width: 190 * size,
     },
 
     //Начало ост
     startRem: {
-      width: 104 * size,
+      width: 98 * size,
     },
 
     // Приход
     coming: {
-      width: 104 * size,
+      width: 98 * size,
     },
 
     // Продажа
     sale: {
-      width: 104 * size,
+      width: 98 * size,
     },
 
     // списать
     writeOff: {
-      width: 104 * size,
+      width: 98 * size,
     },
 
     // Остаток
     remainder: {
-      width: 104 * size,
+      width: 98 * size,
     },
     //Прочие
     others: {
-      width: 104 * size,
+      width: 98 * size,
+    },
+    //Прочие
+    difAcc: {
+      width: 98 * size,
     },
 
     // Разница
     difference: {
-      width: 104 * size,
+      width: 98 * size,
     },
 
     // Цена
     price: {
-      width: 140 * size,
+      width: 138 * size,
     },
 
     // Сумма
     amount: {
-      width: 140 * size,
+      width: 138 * size,
     },
 
     // footer
